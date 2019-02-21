@@ -1,5 +1,7 @@
 package com.angelo.Server;
 
+import com.angelo.PlateManager;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -48,6 +50,8 @@ public class UDPServer {
 
         String[] args = msg.split(UDPServer.MSG_FORMAT);
 
+        System.out.println("Request from [" + packet.getAddress() + "] - " + args[0]);
+
         if(args[0].equals("register")) {
             parseRegisterRequest(args, packet);
         } else if(args[0].equals("lookup")) {
@@ -62,7 +66,6 @@ public class UDPServer {
             sendError(args, packet);
             return;
         }
-//        String response = "SO you want me to register stuff, " + args[1] + " : " + args[2];
 
         String response = this.plateManager.register(args[1], args[2]);
 
@@ -75,7 +78,7 @@ public class UDPServer {
             sendError(args, packet);
             return;
         }
-//        String response = "SO you want me to lookup stuff, " + args[1];
+
         String response = this.plateManager.lookup(args[1]);
 
         packet.setData(response.getBytes());
@@ -83,7 +86,8 @@ public class UDPServer {
     }
 
     private void sendError(String [] args, DatagramPacket packet) throws IOException {
-        String response = "SO you are trying to fool me";
+
+        String response = "Error parsing the request";
 
         packet.setData(response.getBytes());
         this.socket.send(packet);

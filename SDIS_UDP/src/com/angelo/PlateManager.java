@@ -1,4 +1,4 @@
-package com.angelo.Server;
+package com.angelo;
 
 import java.util.HashMap;
 

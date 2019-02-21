@@ -10,14 +10,21 @@ import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) {
+
         String mode = args[0];
 
         if(mode.equals("server")) {
             initServer(Arrays.copyOfRange(args, 1, args.length));
+            return;
         }
         if(mode.equals("client")) {
             initClient(Arrays.copyOfRange(args, 1, args.length));
+            return;
         }
+
+        System.out.println("Invalid program arguments! Format: <server|client> <...specific args>");
+        return;
+
     }
 
     private static void initServer(String[] args) {
