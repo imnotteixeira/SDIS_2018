@@ -1,4 +1,4 @@
-package com.angelo;
+package com.angelo.Server;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -9,14 +9,13 @@ public class UDPServer {
 
     private DatagramSocket socket;
     private final static int BUF_SIZE = 512;
-    private final static int TIMEOUT_MS = 20000;
     private final static String MSG_FORMAT = "/";
 
     private PlateManager plateManager;
 
-    public UDPServer(int port) throws SocketException {
+    public UDPServer(int port, int timeout) throws SocketException {
         this.socket = new DatagramSocket(port);
-        this.socket.setSoTimeout(UDPServer.TIMEOUT_MS);
+        this.socket.setSoTimeout(timeout);
 
         this.plateManager = new PlateManager();
 
