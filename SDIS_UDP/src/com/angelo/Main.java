@@ -1,5 +1,6 @@
 package com.angelo;
 
+import com.angelo.Client.MulticastListener;
 import com.angelo.Client.SocketClient;
 import com.angelo.Server.MulticastSender;
 import com.angelo.Server.UDPServer;
@@ -31,17 +32,18 @@ public class Main {
 
     private static void initServer(String[] args) {
 
-        if(args.length != 2) {
-            System.out.println("Invalid program arguments! Format: server <port> <timeout>");
+        if(args.length != 3) {
+            System.out.println("Invalid program arguments! Format: server <multicast-addr> <port> <timeout>");
             return;
         }
 
-        int port = Integer.parseInt(args[0]);
-        int timeout = Integer.parseInt(args[1]);
+        String host = args[0];
+        int port = Integer.parseInt(args[1]);
+        int timeout = Integer.parseInt(args[2]);
 
-        MulticastSender multicastSender = null;
+
         try {
-            multicastSender = new MulticastSender("231.0.0.0", port);
+            MulticastSender multicastSender = new MulticastSender(host, port);
 
             startAnnouncer(multicastSender, port, 1000);
         } catch (SocketException e) {
@@ -78,6 +80,7 @@ public class Main {
 
 
         InetAddress communicationHost = announcement.getAddress();
+
         String announcementContent = new String(announcement.getData(), 0, announcement.getLength());
         int communicationPort = Integer.parseInt(announcementContent);
 
@@ -119,7 +122,6 @@ public class Main {
 
     private static void startAnnouncer(MulticastSender sender, int port, int interval) {
         ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(1);
-
-        threadPoolExecutor.schedule(() -> sender.send(port),  interval, TimeUnit.MILLISECONDS);
+        threadPoolExecutor.scheduleAtFixedRate(() -> sender.send(port), 500, interval, TimeUnit.MILLISECONDS);
     }
 }
