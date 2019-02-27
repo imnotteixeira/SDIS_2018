@@ -1,12 +1,14 @@
 package com.angelo;
 
 import com.angelo.Client.SocketClient;
+import com.angelo.Server.MulticastSender;
 import com.angelo.Server.UDPServer;
 
 import java.io.IOException;
-import java.net.PortUnreachableException;
-import java.net.SocketTimeoutException;
+import java.net.*;
 import java.util.Arrays;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) {
@@ -37,6 +39,16 @@ public class Main {
         int port = Integer.parseInt(args[0]);
         int timeout = Integer.parseInt(args[1]);
 
+        MulticastSender multicastSender = null;
+        try {
+            multicastSender = new MulticastSender("231.0.0.0", port);
+
+            startAnnouncer(multicastSender, port, 1000);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
+
         try {
             System.out.println("Started Server! Creating Socket...");
             UDPServer server = new UDPServer(port, timeout);
@@ -55,17 +67,28 @@ public class Main {
             return;
         }
 
-        final int N_ATTEMPTS = 10;
-
-
         String host = args[0];
         int port = Integer.parseInt(args[1]);
+
+        System.out.println("Finding the server....");
+
+        MulticastListener multicastListener = new MulticastListener(host, port);
+        DatagramPacket announcement = multicastListener.listen();
+
+
+
+        InetAddress communicationHost = announcement.getAddress();
+        String announcementContent = new String(announcement.getData(), 0, announcement.getLength());
+        int communicationPort = Integer.parseInt(announcementContent);
+
+        final int N_ATTEMPTS = 10;
+
         String msg = args[2];
 
         SocketClient client;
 
         try {
-            client = new SocketClient(host, port);
+            client = new SocketClient(communicationHost, communicationPort);
         }catch(Exception e){
             System.out.println("ERROR OPENING SOCKET");
             e.printStackTrace();
@@ -91,5 +114,12 @@ public class Main {
                 e.printStackTrace();
             }
         }
+    }
+
+
+    private static void startAnnouncer(MulticastSender sender, int port, int interval) {
+        ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(1);
+
+        threadPoolExecutor.schedule(() -> sender.send(port),  interval, TimeUnit.MILLISECONDS);
     }
 }
