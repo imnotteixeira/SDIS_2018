@@ -1,12 +1,16 @@
 package com.angelo;
 
 import com.angelo.Client.SocketClient;
+import com.angelo.Server.MulticastSender;
 import com.angelo.Server.UDPServer;
 
 import java.io.IOException;
 import java.net.PortUnreachableException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) {
@@ -37,6 +41,16 @@ public class Main {
         int port = Integer.parseInt(args[0]);
         int timeout = Integer.parseInt(args[1]);
 
+        MulticastSender multicastSender = null;
+        try {
+            multicastSender = new MulticastSender("231.0.0.0", port);
+
+            startAnnouncer(multicastSender, port, 1000);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
+
         try {
             System.out.println("Started Server! Creating Socket...");
             UDPServer server = new UDPServer(port, timeout);
@@ -54,6 +68,8 @@ public class Main {
             System.out.println("Invalid program arguments! Format: client <host> <port> <msg>");
             return;
         }
+
+        System.out.println("Finding the server....");
 
         final int N_ATTEMPTS = 10;
 
@@ -91,5 +107,12 @@ public class Main {
                 e.printStackTrace();
             }
         }
+    }
+
+
+    private static void startAnnouncer(MulticastSender sender, int port, int interval) {
+        ScheduledThreadPoolExecutor threadPoolExecutor = new ScheduledThreadPoolExecutor(1);
+
+        threadPoolExecutor.schedule(() -> sender.send(port),  interval, TimeUnit.MILLISECONDS);
     }
 }

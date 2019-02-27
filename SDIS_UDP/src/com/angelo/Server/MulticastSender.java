@@ -11,14 +11,14 @@ public class MulticastSender {
     private DatagramSocket datagramSocket;
     private static final int TIMEOUT = 10000;
 
-    MulticastSender(String hostname, int port) throws SocketException {
+    public MulticastSender(String hostname, int port) throws SocketException {
         this.hostname = hostname;
         this.port = port;
         datagramSocket = new DatagramSocket();
         datagramSocket.setSoTimeout(MulticastSender.TIMEOUT);
     }
 
-    void send(Integer listeningPort){
+    public void send(Integer listeningPort){
         byte[] buf = listeningPort.toString().getBytes();
 
         try {
