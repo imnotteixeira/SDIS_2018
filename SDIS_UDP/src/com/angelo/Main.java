@@ -84,6 +84,8 @@ public class Main {
         String announcementContent = new String(announcement.getData(), 0, announcement.getLength());
         int communicationPort = Integer.parseInt(announcementContent);
 
+        System.out.println("Server Found! Communicating with: " + communicationHost.getHostName() + ":" + communicationPort);
+
         final int N_ATTEMPTS = 10;
 
         String msg = args[2];
