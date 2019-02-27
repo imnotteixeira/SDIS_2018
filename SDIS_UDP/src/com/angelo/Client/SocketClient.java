@@ -5,14 +5,14 @@ import java.net.*;
 
 public class SocketClient {
 
-    private final String serverHostname;
+    private final InetAddress serverHostname;
     private final int port;
     private DatagramSocket datagramSocket;
     private static final int TIMEOUT = 10000;
     private static final int BUF_SIZE = 512;
 
 
-    public SocketClient(String serverHostname, int port) throws SocketException {
+    public SocketClient(InetAddress serverHostname, int port) throws SocketException {
         this.serverHostname = serverHostname;
         this.port = port;
         datagramSocket = new DatagramSocket();
@@ -24,7 +24,7 @@ public class SocketClient {
         byte[] buf = message.getBytes();
 
         DatagramPacket packet = new DatagramPacket(buf, buf.length,
-                InetAddress.getByName(this.serverHostname), this.port);
+                this.serverHostname, this.port);
         this.datagramSocket.send(packet);
     }
 

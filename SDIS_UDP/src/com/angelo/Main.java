@@ -5,9 +5,7 @@ import com.angelo.Server.MulticastSender;
 import com.angelo.Server.UDPServer;
 
 import java.io.IOException;
-import java.net.PortUnreachableException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
+import java.net.*;
 import java.util.Arrays;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -69,19 +67,28 @@ public class Main {
             return;
         }
 
+        String host = args[0];
+        int port = Integer.parseInt(args[1]);
+
         System.out.println("Finding the server....");
+
+        MulticastListener multicastListener = new MulticastListener(host, port);
+        DatagramPacket announcement = multicastListener.listen();
+
+
+
+        InetAddress communicationHost = announcement.getAddress();
+        String announcementContent = new String(announcement.getData(), 0, announcement.getLength());
+        int communicationPort = Integer.parseInt(announcementContent);
 
         final int N_ATTEMPTS = 10;
 
-
-        String host = args[0];
-        int port = Integer.parseInt(args[1]);
         String msg = args[2];
 
         SocketClient client;
 
         try {
-            client = new SocketClient(host, port);
+            client = new SocketClient(communicationHost, communicationPort);
         }catch(Exception e){
             System.out.println("ERROR OPENING SOCKET");
             e.printStackTrace();
