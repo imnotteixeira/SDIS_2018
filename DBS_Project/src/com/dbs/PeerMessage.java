@@ -1,8 +1,11 @@
 package com.dbs;
 
 
+import java.util.Arrays;
 
 public class PeerMessage {
+
+    public static String CRLF = "\r\n";
 
     private String messageType;
     private byte[] version;
@@ -15,5 +18,15 @@ public class PeerMessage {
         this.version = version;
         this.senderId = senderId;
         this.fileId = fileId;
+    }
+
+    @Override
+    public String toString() {
+        return "PeerMessage{" +
+                "messageType='" + messageType + '\'' +
+                ", version=" + Arrays.toString(version) +
+                ", senderId='" + senderId + '\'' +
+                ", fileId='" + fileId + '\'' +
+                '}';
     }
 }
