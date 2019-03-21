@@ -3,6 +3,7 @@ package com.dbs;
 import com.dbs.filemanager.FileManager;
 
 import java.io.IOException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -49,23 +50,31 @@ public class Peer {
 
         PeerRemoteObject peer = new PeerRemoteObject();
         IPeerInterface stub = null;
-
+        Registry reg = null;
         try {
             stub = (IPeerInterface) UnicastRemoteObject.exportObject(peer, 0);
 
             try {
-                Registry reg = LocateRegistry.getRegistry(1099);
+                reg = LocateRegistry.getRegistry(1099);
 
                 reg.rebind(RMI_NAME, stub);
 
             } catch (RemoteException e) {
 
-                Registry reg = LocateRegistry.createRegistry(1099);
+                reg = LocateRegistry.createRegistry(1099);
 
                 reg.rebind(RMI_NAME, stub);
             }
 
         } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+
+        try {
+            reg.unbind(RMI_NAME);
+            UnicastRemoteObject.unexportObject(peer,true);
+        } catch (RemoteException | NotBoundException e) {
             e.printStackTrace();
         }
 
