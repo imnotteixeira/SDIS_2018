@@ -1,4 +1,4 @@
-package com.dbs;
+package com.dbs.messages;
 
 
 import java.util.Arrays;

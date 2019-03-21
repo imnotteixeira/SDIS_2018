@@ -1,4 +1,4 @@
-package com.dbs;
+package com.dbs.messages;
 
 public class DeleteMessage extends PeerMessage {
     public DeleteMessage(byte[] version, String senderId, String fileId) {

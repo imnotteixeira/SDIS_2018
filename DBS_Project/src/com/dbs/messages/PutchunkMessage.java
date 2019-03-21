@@ -1,6 +1,5 @@
-package com.dbs;
+package com.dbs.messages;
 
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -1,4 +1,4 @@
-package com.dbs;
+package com.dbs.messages;
 
 public class StoredMessage extends PeerMessage {
     private final String chunkNo;
