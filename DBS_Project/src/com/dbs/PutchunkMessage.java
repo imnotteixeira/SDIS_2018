@@ -6,18 +6,21 @@ import java.util.regex.Pattern;
 
 public class PutchunkMessage extends PeerMessage {
     private final byte[] body;
+    private final String replicationDegree;
     private String chunkNo;
 
-    public PutchunkMessage(byte[] version, String senderId, String fileId, String chunkNo, byte[] body) {
+    public PutchunkMessage(byte[] version, String senderId, String fileId, String chunkNo, String replicationDegree, byte[] body) {
         super("PUTCHUNK", version, senderId, fileId);
         this.chunkNo = chunkNo;
         this.body = body;
+        this.replicationDegree = replicationDegree;
     }
 
     public static PutchunkMessage fromString(String src) {
         Pattern r = Pattern.compile("(PUTCHUNK)\\s(\\d.\\d)\\s(\\d+)\\s(\\w+)\\s(\\d{1,6})\\s(\\d)\\s" +
                 PeerMessage.CRLF +
-                "(.*)", Pattern.MULTILINE);
+                PeerMessage.CRLF +
+                "(.*)", Pattern.DOTALL);
 
         Matcher m = r.matcher(src);
         m.find();
@@ -28,15 +31,16 @@ public class PutchunkMessage extends PeerMessage {
         String replicationDegree = m.group(6);
         byte[] body = m.group(7).getBytes();
 
-        
-        return new PutchunkMessage(version, senderId, fileId, chunkNo, body);
+
+        return new PutchunkMessage(version, senderId, fileId, chunkNo, replicationDegree, body);
     }
 
     @Override
     public String toString() {
         return super.toString()+
-                "body=" + Arrays.toString(body) +
-                ", chunkNo='" + chunkNo + '\'' +
-                '}';
+            "body=" + new String(body) +
+            ", replicationFactor='" + replicationDegree+ '\'' +
+            ", chunkNo='" + chunkNo + '\'' +
+            '}';
     }
 }

@@ -50,12 +50,9 @@ public class Storer {
         executor.shutdown();
     }
 
-    TROCAR PARA USAR PUTCHUNKMESSAGE.FROMSTRING
     private PutchunkMessage decodePUTCHUNK(String encodedData){
-        Pattern r = Pattern.compile("(PUTCHUNK)\\s(\\d.\\d)\\s(\\d+)\\s(\\w+)\\s(\\d{1,6})\\s(\\d)");
 
-        Matcher m = r.matcher(encodedData);
-
+        return PutchunkMessage.fromString(encodedData);
 
     }
 

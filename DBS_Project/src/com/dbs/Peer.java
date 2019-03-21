@@ -1,6 +1,5 @@
 package com.dbs;
 
-import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -9,13 +8,17 @@ import java.rmi.server.UnicastRemoteObject;
 public class Peer {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
 
-        String a = "PUTCHUNK 1.0 1 22 333 4 \r\n\r\nbodybodybodybodybody";
+        if(args.length != 1) {
+            System.out.println("usage: peer <peer_id>");
+            return;
+        }
 
-        PutchunkMessage p = PutchunkMessage.fromString(a);
+        String peer_id = args[0];
 
-        System.out.println(p);
+        System.out.println("[" + peer_id + "] Starting Peer...");
+
+        System.out.println("[" + peer_id + "] Started Peer");
 
         PeerRemoteObject peer = new PeerRemoteObject();
         IPeerInterface stub = null;
@@ -26,27 +29,17 @@ public class Peer {
             try {
                 Registry reg = LocateRegistry.getRegistry(1099);
 
-                reg.bind("peer_id", stub);
+                reg.rebind(peer_id, stub);
 
             } catch (RemoteException e) {
-                try {
-                    Registry reg = LocateRegistry.createRegistry(1099);
 
-                    reg.bind("peer_id", stub);
-                } catch (RemoteException | AlreadyBoundException e1) {
-                    e1.printStackTrace();
-                }
-            } catch (AlreadyBoundException e) {
-                e.printStackTrace();
+                Registry reg = LocateRegistry.createRegistry(1099);
+
+                reg.rebind(peer_id, stub);
             }
 
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-
-
-
-
-
     }
 }
