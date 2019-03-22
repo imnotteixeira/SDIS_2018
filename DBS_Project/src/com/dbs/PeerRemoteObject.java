@@ -12,7 +12,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.rmi.RemoteException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 public class PeerRemoteObject implements IPeerInterface {
 
@@ -27,8 +26,6 @@ public class PeerRemoteObject implements IPeerInterface {
     @Override
     public void backup(String filePath, int replicationDegree) throws RemoteException {
 
-
-
         try {
             Path path = Paths.get(filePath);
             byte[] data = Files.readAllBytes(path);
@@ -40,14 +37,12 @@ public class PeerRemoteObject implements IPeerInterface {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] fileId_hash = digest.digest(fileId_raw.getBytes(StandardCharsets.UTF_8));
 
-//            String fileId_encoded = Base64.getEncoder().encodeToString(fileId_hash);
-//
-//            String fileId = fileId_encoded.replace('/', '_');
             String fileId = ByteToHex.convert(fileId_hash);
 
-
+            System.out.println("Saving File...");
             System.out.println("FileName: " + path.getFileName().toString());
-            System.out.println("CreationTime: " + attr.creationTime());
+            System.out.println("Creation Time: " + attr.creationTime());
+            System.out.println("File ID: " + fileId);
 
             this.fm.saveFile(this.dir, fileId, data, 5);
 
