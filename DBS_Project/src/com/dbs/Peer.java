@@ -36,19 +36,19 @@ public class Peer {
         System.out.println("[" + PEER_ID + "] Started Peer");
 
 
-
+        System.out.println("[" + PEER_ID + "] Initializing File Manager");
         FileManager fm = new FileManager();
 
 
-        System.out.println("Saving test file...");
-        byte[] data = {'a','b','c','d','e','a','b','c','d','e','a','b','c','d','e','a','b','c','d','e'};
-        String fileId = "file_uniqueid12312asdas";
-        fm.saveFile(BACKUP_DIR, fileId, data, 5);
-        System.out.println("Test file saved successfully!");
+//        System.out.println("Saving test file...");
+//        byte[] data = {'a','b','c','d','e','a','b','c','d','e','a','b','c','d','e','a','b','c','d','e'};
+//        String fileId = "file_uniqueid12312asdas";
+//        fm.saveFile(BACKUP_DIR, fileId, data, 5);
+//        System.out.println("Test file saved successfully!");
 
 
 
-        PeerRemoteObject peer = new PeerRemoteObject();
+        PeerRemoteObject peer = new PeerRemoteObject(fm, BACKUP_DIR);
         IPeerInterface stub = null;
         Registry reg = null;
         try {
@@ -71,14 +71,14 @@ public class Peer {
         }
 
 
-        try {
-            reg.unbind(RMI_NAME);
-            UnicastRemoteObject.unexportObject(peer,true);
-        } catch (RemoteException | NotBoundException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("Peer Disconnected. Press Enter to exit.");
-        new java.util.Scanner(System.in).nextLine();
+//        try {
+//            reg.unbind(RMI_NAME);
+//            UnicastRemoteObject.unexportObject(peer,true);
+//        } catch (RemoteException | NotBoundException e) {
+//            e.printStackTrace();
+//        }
+//
+//        System.out.println("Peer Disconnected. Press Enter to exit.");
+//        new java.util.Scanner(System.in).nextLine();
     }
 }

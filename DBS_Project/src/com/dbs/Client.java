@@ -11,11 +11,10 @@ public class Client {
         try {
             Registry reg = LocateRegistry.getRegistry("localhost");
 
-            IPeerInterface stub = (IPeerInterface) reg.lookup("peer_id");
+            IPeerInterface stub = (IPeerInterface) reg.lookup("peer_2");
 
-            int res = stub.sum(1,2);
+            stub.backup("./testfile.txt",2);
 
-            System.out.println(res);
         } catch (RemoteException e) {
             e.printStackTrace();
         } catch (NotBoundException e) {
