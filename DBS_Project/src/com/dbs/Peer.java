@@ -1,16 +1,8 @@
 package com.dbs;
 
-import com.dbs.filemanager.FileManager;
-
-import java.io.IOException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-
 public class Peer {
 
+    private static String PEER_ID;
 
     public static void main(String[] args) {
 
@@ -26,50 +18,13 @@ public class Peer {
         final String MDB_ADDRESS = args[4];
         final String MDR_ADDRESS = args[5];
 
+        PeerController peerController = new PeerController(VERSION, PEER_ID, RMI_NAME, MC_ADDRESS, MDB_ADDRESS, MDR_ADDRESS);
+
+        peerController.start();
 
 
-        final String BACKUP_DIR = "./peer_backup_"+PEER_ID;
-
-
-        System.out.println("[" + PEER_ID + "] Starting Peer...");
-
-
-
-        FileManager fm = new FileManager();
-        PeerRemoteObject peer = new PeerRemoteObject(fm, BACKUP_DIR);
-        IPeerInterface stub = null;
-        Registry reg = null;
-        try {
-            stub = (IPeerInterface) UnicastRemoteObject.exportObject(peer, 0);
-
-            try {
-                reg = LocateRegistry.getRegistry(1099);
-
-                reg.rebind(RMI_NAME, stub);
-
-            } catch (RemoteException e) {
-
-                reg = LocateRegistry.createRegistry(1099);
-
-                reg.rebind(RMI_NAME, stub);
-            }
-
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("[" + PEER_ID + "] Started Peer.");
-        System.out.println("[" + PEER_ID + "] Initialized File Manager.");
-
-
-//        try {
-//            reg.unbind(RMI_NAME);
-//            UnicastRemoteObject.unexportObject(peer,true);
-//        } catch (RemoteException | NotBoundException e) {
-//            e.printStackTrace();
-//        }
-//
-//        System.out.println("Peer Disconnected. Press Enter to exit.");
-//        new java.util.Scanner(System.in).nextLine();
+        //One can use peerController.close() to disconnect it before terminating the application
     }
+
+
 }

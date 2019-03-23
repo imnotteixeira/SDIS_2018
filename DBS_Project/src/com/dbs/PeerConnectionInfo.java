@@ -6,18 +6,21 @@ public class PeerConnectionInfo {
 
     private int senderId, controlPort, backupPort, recoveryPort;
     private byte[] version;
-    String multicastHostname;
+    private String controlChannelHostname, backupChannelHostname, recoveryChannelHostname;
 
-    private MulticastSocket controlChanelSocket, backupChannelSocket, recoveryChannelSocket;
+    private MulticastSocket controlChannelSocket, backupChannelSocket, recoveryChannelSocket;
 
-    public PeerConnectionInfo(int senderId, byte[] version, String multicastHostname, int controlPort, int backupPort, int recoveryPort, MulticastSocket controlChanelSocket, MulticastSocket backupChannelSocket, MulticastSocket recoveryChannelSocket) {
+    public PeerConnectionInfo(int senderId, byte[] version, String controlChannelHostname, int controlPort, String backupChannelHostname, int backupPort, String recoveryChannelHostname, int recoveryPort, MulticastSocket controlChanelSocket, MulticastSocket backupChannelSocket, MulticastSocket recoveryChannelSocket) {
         this.senderId = senderId;
-        this.controlPort = controlPort;
-        this.backupPort = backupPort;
-        this.recoveryPort = recoveryPort;
         this.version = version;
-        this.multicastHostname = multicastHostname;
-        this.controlChanelSocket = controlChanelSocket;
+        this.controlChannelHostname = controlChannelHostname;
+        this.controlPort = controlPort;
+        this.backupChannelHostname = backupChannelHostname;
+        this.backupPort = backupPort;
+        this.recoveryChannelHostname = recoveryChannelHostname;
+        this.recoveryPort = recoveryPort;
+
+        this.controlChannelSocket = controlChanelSocket;
         this.backupChannelSocket = backupChannelSocket;
         this.recoveryChannelSocket = recoveryChannelSocket;
     }
@@ -42,12 +45,20 @@ public class PeerConnectionInfo {
         return version;
     }
 
-    public String getMulticastHostname() {
-        return multicastHostname;
+    public String getControlChannelHostname() {
+        return controlChannelHostname;
     }
 
-    public MulticastSocket getControlChanelSocket() {
-        return controlChanelSocket;
+    public String getBackupChannelHostname() {
+        return backupChannelHostname;
+    }
+
+    public String getRecoveryChannelHostname() {
+        return recoveryChannelHostname;
+    }
+
+    public MulticastSocket getControlChannelSocket() {
+        return controlChannelSocket;
     }
 
     public MulticastSocket getBackupChannelSocket() {
@@ -57,4 +68,6 @@ public class PeerConnectionInfo {
     public MulticastSocket getRecoveryChannelSocket() {
         return recoveryChannelSocket;
     }
+
+
 }

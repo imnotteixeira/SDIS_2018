@@ -32,10 +32,12 @@ public class Storer {
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
         try {
-            this.connectionInfo.getControlChanelSocket().receive(packet);
+            this.connectionInfo.getControlChannelSocket().receive(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        System.out.println("Received Control Message: " + new String(packet.getData(), 0, packet.getLength()));
 
         return decodePUTCHUNK(new String(packet.getData(), 0, packet.getLength()));
     }
@@ -61,8 +63,8 @@ public class Storer {
 
         try {
             DatagramPacket packet = new DatagramPacket(buf, buf.length,
-                InetAddress.getByName(connectionInfo.getMulticastHostname()), connectionInfo.getControlPort());
-                connectionInfo.getControlChanelSocket().send(packet);
+                InetAddress.getByName(connectionInfo.getControlChannelHostname()), connectionInfo.getControlPort());
+                connectionInfo.getControlChannelSocket().send(packet);
         }catch(UnknownHostException e){
             e.printStackTrace();
         }catch(IOException e){
