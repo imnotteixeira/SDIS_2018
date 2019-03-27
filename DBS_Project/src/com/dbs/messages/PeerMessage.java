@@ -1,9 +1,12 @@
 package com.dbs.messages;
 
 
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.util.Arrays;
 
-public class PeerMessage {
+abstract public class PeerMessage {
 
     public static String CRLF = "\r\n";
 
@@ -29,4 +32,6 @@ public class PeerMessage {
                 ", fileId='" + fileId + '\'' +
                 '}';
     }
+
+    abstract public void send(MulticastSocket socket);
 }

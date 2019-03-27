@@ -12,9 +12,9 @@ if [[ ${ARGC} -eq 1 ]]
 then
     NUM_PEERS=$1
     echo "MULTICAST CHANNELS NOT SPECIFIED, USING DEFAULTS!"
-    MC=220.220.220.0:8765
-    MDB=220.220.220.0:8766
-    MDR=220.220.220.0:8767
+    MC=230.0.0.0:8765
+    MDB=230.0.0.0:8766
+    MDR=230.0.0.0:8767
 fi
 
 if [[ ${ARGC} -eq 4 ]]

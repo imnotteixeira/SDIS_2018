@@ -17,40 +17,19 @@ public class PeerRemoteObject implements IPeerInterface {
 
     private final FileManager fm;
     private final String dir;
+    private PeerController peer;
 
-    public PeerRemoteObject(FileManager fm, String dir) {
+    public PeerRemoteObject(PeerController peer, FileManager fm) {
         this.fm = fm;
-        this.dir = dir;
+        this.peer = peer;
+        this.dir = peer.getBackupDir();
     }
 
     @Override
     public void backup(String filePath, int replicationDegree) throws RemoteException {
 
-        try {
-            Path path = Paths.get(filePath);
-            byte[] data = Files.readAllBytes(path);
 
-            BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
-
-            String fileId_raw = path.getFileName().toString() + attr.creationTime().toString();
-
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] fileId_hash = digest.digest(fileId_raw.getBytes(StandardCharsets.UTF_8));
-
-            String fileId = ByteToHex.convert(fileId_hash);
-
-            System.out.println("Saving File...");
-            System.out.println("FileName: " + path.getFileName().toString());
-            System.out.println("Creation Time: " + attr.creationTime());
-            System.out.println("File ID: " + fileId);
-
-            this.fm.saveFile(this.dir, fileId, data, 5);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+        peer.backup(filePath, replicationDegree);
 
     }
 }

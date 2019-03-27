@@ -1,5 +1,8 @@
 package com.dbs.messages;
 
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,4 +45,15 @@ public class PutchunkMessage extends PeerMessage {
             ", chunkNo='" + chunkNo + '\'' +
             '}';
     }
+
+    @Override
+    public void send(MulticastSocket socket) {
+
+        //Falta criar byte[] com msg, talvez seja useful passar hostname e port nos args
+        DatagramPacket packet = new DatagramPacket(buf, buf.length,
+                InetAddress.getByName(connectionInfo.getControlChannelHostname()), connectionInfo.getControlPort());
+
+        socket.send(packet);
+    }
+
 }
