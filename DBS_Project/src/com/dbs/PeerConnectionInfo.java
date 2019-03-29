@@ -10,7 +10,7 @@ public class PeerConnectionInfo {
 
     private MulticastSocket controlChannelSocket, backupChannelSocket, recoveryChannelSocket;
 
-    public PeerConnectionInfo(int senderId, byte[] version, String controlChannelHostname, int controlPort, String backupChannelHostname, int backupPort, String recoveryChannelHostname, int recoveryPort, MulticastSocket controlChanelSocket, MulticastSocket backupChannelSocket, MulticastSocket recoveryChannelSocket) {
+    public PeerConnectionInfo(int senderId, byte[] version, String controlChannelHostname, int controlPort, String backupChannelHostname, int backupPort, String recoveryChannelHostname, int recoveryPort) {
         this.senderId = senderId;
         this.version = version;
         this.controlChannelHostname = controlChannelHostname;
@@ -19,10 +19,6 @@ public class PeerConnectionInfo {
         this.backupPort = backupPort;
         this.recoveryChannelHostname = recoveryChannelHostname;
         this.recoveryPort = recoveryPort;
-
-        this.controlChannelSocket = controlChanelSocket;
-        this.backupChannelSocket = backupChannelSocket;
-        this.recoveryChannelSocket = recoveryChannelSocket;
     }
 
     public int getSenderId() {
@@ -70,4 +66,15 @@ public class PeerConnectionInfo {
     }
 
 
+    public void setControlChannelSocket(MulticastSocket controlChannelSocket) {
+        this.controlChannelSocket = controlChannelSocket;
+    }
+
+    public void setBackupChannelSocket(MulticastSocket backupChannelSocket) {
+        this.backupChannelSocket = backupChannelSocket;
+    }
+
+    public void setRecoveryChannelSocket(MulticastSocket recoveryChannelSocket) {
+        this.recoveryChannelSocket = recoveryChannelSocket;
+    }
 }

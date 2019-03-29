@@ -1,17 +1,7 @@
 package com.dbs;
 
 import com.dbs.filemanager.FileManager;
-import com.dbs.utils.ByteToHex;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.rmi.RemoteException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 public class PeerRemoteObject implements IPeerInterface {
 

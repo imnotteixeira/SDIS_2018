@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +24,10 @@ public class Storer {
     public void run(){
         while(true){
             PutchunkMessage PCmessage = PUTCHUNKListener();
-            sendResponse(PCmessage);
+            if(Integer.parseInt(PCmessage.getSenderId()) != connectionInfo.getSenderId()) {
+                sendResponse(PCmessage);
+            }
+
         }
     }
 
@@ -32,14 +36,14 @@ public class Storer {
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
         try {
-            this.connectionInfo.getControlChannelSocket().receive(packet);
+            this.connectionInfo.getBackupChannelSocket().receive(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        System.out.println("Received Control Message: " + new String(packet.getData(), 0, packet.getLength()));
+        System.out.println("Received Backup Message: " + new String(packet.getData(), 0, packet.getLength()));
 
-        return decodePUTCHUNK(new String(packet.getData(), 0, packet.getLength()));
+        return decodePUTCHUNK(Arrays.copyOf(packet.getData(), packet.getLength()));
     }
 
     private void sendResponse(PutchunkMessage PCmessage) {
@@ -52,7 +56,7 @@ public class Storer {
         executor.shutdown();
     }
 
-    private PutchunkMessage decodePUTCHUNK(String encodedData){
+    private PutchunkMessage decodePUTCHUNK(byte[] encodedData){
 
         return PutchunkMessage.fromString(encodedData);
 

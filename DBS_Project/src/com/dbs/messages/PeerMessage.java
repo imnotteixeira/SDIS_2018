@@ -25,13 +25,23 @@ abstract public class PeerMessage {
 
     @Override
     public String toString() {
-        return "PeerMessage{" +
-                "messageType='" + messageType + '\'' +
-                ", version=" + Arrays.toString(version) +
-                ", senderId='" + senderId + '\'' +
-                ", fileId='" + fileId + '\'' +
-                '}';
+        return messageType + " "
+                + new String(version, 0, version.length) + " "
+                + senderId + " "
+                + fileId;
     }
 
-    abstract public void send(MulticastSocket socket);
+    abstract public void send(MulticastSocket socket, String host, int port);
+
+    public byte[] getVersion() {
+        return version;
+    }
+
+    public String getSenderId() {
+        return senderId;
+    }
+
+    public String getFileId() {
+        return fileId;
+    }
 }

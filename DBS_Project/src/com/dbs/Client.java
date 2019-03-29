@@ -31,7 +31,7 @@ public class Client {
         try {
             socket = new DatagramSocket();
 
-        group = InetAddress.getByName("230.220.220.0");
+        group = InetAddress.getByName("230.0.0.0");
         buf = "A small step for a java application, a huge step for the client".getBytes();
 
         DatagramPacket packet
