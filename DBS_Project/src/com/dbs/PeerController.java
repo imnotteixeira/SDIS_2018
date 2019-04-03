@@ -1,13 +1,14 @@
 package com.dbs;
 
 import com.dbs.filemanager.FileManager;
+import com.dbs.listeners.BackupListener;
+import com.dbs.listeners.Listener;
 import com.dbs.messages.PutchunkMessage;
 import com.dbs.utils.ByteToHex;
 import com.dbs.utils.NetworkAddress;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -24,12 +25,17 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class PeerController {
 
+    public static int CORE_THREADS = 10;
+    public static int MAX_POOL_SIZE = 100;
+
+    public static int KEEP_ALIVE_TIME = 30;
+
     private String rmi_name;
-    PeerConnectionInfo connectionInfo;
+    public static PeerConnectionInfo connectionInfo;
     private final String BACKUP_DIR;
 
     private Registry reg = null;
@@ -37,7 +43,7 @@ public class PeerController {
 
 
 
-    private final int CHUNK_SIZE = 5;
+    private final int CHUNK_SIZE = (int) 64e3;
 
 
     public PeerController(String version, String peer_id, String rmi_name, String mc_address, String mdb_address, String mdr_address) {
@@ -52,7 +58,7 @@ public class PeerController {
 
         this.BACKUP_DIR = "./peer_backup_"+ peer_id;
 
-        this.connectionInfo = new PeerConnectionInfo(
+        connectionInfo = new PeerConnectionInfo(
                 Integer.valueOf(peer_id),
                 version.getBytes(),
                 mc_address_addr.hostname,
@@ -77,15 +83,9 @@ public class PeerController {
         log("Initialized Remote Object.");
 
 
-
         log("Peer Ready.");
 
-        Storer storerController = new Storer(
-            this.connectionInfo
-        );
 
-        log("Listening for control messages...");
-        storerController.run();
 
     }
 
@@ -118,32 +118,76 @@ public class PeerController {
 
     public void initializePeerNetworkConnection() {
 
-        try {
-            //Connect to Control Channel
-            this.connectionInfo.setControlChannelSocket(new MulticastSocket(this.connectionInfo.getControlPort()));
-            InetAddress mc_group = InetAddress.getByName(this.connectionInfo.getControlChannelHostname());
-            this.connectionInfo.getControlChannelSocket().joinGroup(mc_group);
-            log("Joined Control Channel at " + this.connectionInfo.getControlChannelHostname() + ":" + this.connectionInfo.getControlPort());
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-            //Connect to Backup Channel
-            this.connectionInfo.setBackupChannelSocket(new MulticastSocket(this.connectionInfo.getBackupPort()));
-            InetAddress mdb_group = InetAddress.getByName(this.connectionInfo.getBackupChannelHostname());
-            this.connectionInfo.getBackupChannelSocket().joinGroup(mdb_group);
-            log("Joined Backup Channel at " + this.connectionInfo.getBackupChannelHostname() + ":" + this.connectionInfo.getBackupPort());
-
-            //Connect to Recovery Channel
-            this.connectionInfo.setRecoveryChannelSocket(new MulticastSocket(this.connectionInfo.getRecoveryPort()));
-            InetAddress mdr_group = InetAddress.getByName(this.connectionInfo.getRecoveryChannelHostname());
-            this.connectionInfo.getRecoveryChannelSocket().joinGroup(mdr_group);
-            log("Joined Recovery Channel at " + this.connectionInfo.getRecoveryChannelHostname() + ":" + this.connectionInfo.getRecoveryPort());
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Future<String> controlChannelListener = executorService.submit(() -> startControlChannelListener());
+        Future<String> backupChannelListener = executorService.submit(() -> startBackupChannelListener());
+        Future<String> restoreChannelListener = executorService.submit(() -> startRestoreChannelListener());
 
     }
 
+    private String startControlChannelListener() {
+        try {
+            //Connect to Control Channel
+            connectionInfo.setControlChannelSocket(new MulticastSocket(connectionInfo.getControlPort()));
+            InetAddress mc_group = InetAddress.getByName(connectionInfo.getControlChannelHostname());
+            connectionInfo.getControlChannelSocket().joinGroup(mc_group);
+            log("Joined Control Channel at " + connectionInfo.getControlChannelHostname() + ":" + connectionInfo.getControlPort());
+        } catch (IOException e) {
+            return "IO ERROR";
+        }
+
+        //START LISTENING HERE
+
+
+
+        return "";
+    }
+
+    private String startBackupChannelListener() {
+        try {
+
+            //Connect to Backup Channel
+            connectionInfo.setBackupChannelSocket(new MulticastSocket(connectionInfo.getBackupPort()));
+            InetAddress mdb_group = InetAddress.getByName(connectionInfo.getBackupChannelHostname());
+            connectionInfo.getBackupChannelSocket().joinGroup(mdb_group);
+            log("Joined Backup Channel at " + connectionInfo.getBackupChannelHostname() + ":" + connectionInfo.getBackupPort());
+        } catch (IOException e) {
+            return "IO ERROR";
+        }
+
+
+
+        //START LISTENING HERE
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                PeerController.CORE_THREADS,
+                PeerController.MAX_POOL_SIZE,
+                PeerController.KEEP_ALIVE_TIME,
+                TimeUnit.SECONDS,
+                new SynchronousQueue<Runnable>());
+
+        Listener backupChannelListener = new BackupListener(connectionInfo.getBackupChannelSocket(), threadPoolExecutor, this.BACKUP_DIR);
+        log("Listening for control messages...");
+        backupChannelListener.listen();
+
+        return "";
+    }
+
+    private String startRestoreChannelListener() {
+        try {
+
+            //Connect to Recovery Channel
+            connectionInfo.setRecoveryChannelSocket(new MulticastSocket(connectionInfo.getRecoveryPort()));
+            InetAddress mdr_group = InetAddress.getByName(connectionInfo.getRecoveryChannelHostname());
+            connectionInfo.getRecoveryChannelSocket().joinGroup(mdr_group);
+            log("Joined Recovery Channel at " + connectionInfo.getRecoveryChannelHostname() + ":" + connectionInfo.getRecoveryPort());
+        } catch (IOException e) {
+            return "IO ERROR";
+        }
+
+        //START LISTENING HERE
+        return "";
+    }
 
 
     public void close() {
@@ -223,7 +267,7 @@ public class PeerController {
     private void putchunk(String fileId, byte[] chunk, int chunkNo, int replicationDegree) {
         System.out.println("Sending PUTCHUNK");
 
-        PutchunkMessage msg = new PutchunkMessage(this.connectionInfo.getVersion(), String.valueOf(this.connectionInfo.getSenderId()), fileId, String.valueOf(chunkNo), String.valueOf(replicationDegree), chunk);
+        PutchunkMessage msg = new PutchunkMessage(connectionInfo.getVersion(), String.valueOf(connectionInfo.getSenderId()), fileId, String.valueOf(chunkNo), String.valueOf(replicationDegree), chunk);
 
         msg.send(connectionInfo.getBackupChannelSocket(), connectionInfo.getBackupChannelHostname(), connectionInfo.getBackupPort());
 
@@ -231,7 +275,7 @@ public class PeerController {
     }
 
     public void log(String msg) {
-        System.out.println("[" + this.connectionInfo.getSenderId() + "] " + msg);
+        System.out.println("[" + connectionInfo.getSenderId() + "] " + msg);
     }
 
     public String getBackupDir() {

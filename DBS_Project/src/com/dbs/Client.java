@@ -15,7 +15,7 @@ public class Client {
 
             IPeerInterface stub = (IPeerInterface) reg.lookup("peer_1");
 
-            stub.backup("./testfile.txt",2);
+            stub.backup("./8ktest.jpg",2);
 
         } catch (RemoteException e) {
             e.printStackTrace();

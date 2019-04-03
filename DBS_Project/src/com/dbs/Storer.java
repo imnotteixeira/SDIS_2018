@@ -1,5 +1,6 @@
 package com.dbs;
 
+import com.dbs.filemanager.FileManager;
 import com.dbs.messages.PutchunkMessage;
 
 import java.io.IOException;
@@ -13,37 +14,17 @@ import java.util.concurrent.TimeUnit;
 
 public class Storer {
 
-    private PeerConnectionInfo connectionInfo;
-    private static final int BUF_SIZE = 65622;
+    private final String BACKUP_DIR;
 
-
-    public Storer(PeerConnectionInfo connectionInfo){
-        this.connectionInfo = connectionInfo;
+    public Storer(String dir) {
+        this.BACKUP_DIR = dir;
     }
 
-    public void run(){
-        while(true){
-            PutchunkMessage PCmessage = PUTCHUNKListener();
-            if(Integer.parseInt(PCmessage.getSenderId()) != connectionInfo.getSenderId()) {
-                sendResponse(PCmessage);
-            }
-
+    public void store(PutchunkMessage msg){
+        if(Integer.parseInt(msg.getSenderId()) != PeerController.connectionInfo.getSenderId()) {
+            FileManager.storeChunk(this.BACKUP_DIR, msg.getFileId(), msg.getChunkNo(), msg.getBody());
+            sendResponse(msg);
         }
-    }
-
-    private PutchunkMessage PUTCHUNKListener(){
-        byte[] buf = new byte[Storer.BUF_SIZE];
-        DatagramPacket packet = new DatagramPacket(buf, buf.length);
-
-        try {
-            this.connectionInfo.getBackupChannelSocket().receive(packet);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("Received Backup Message: " + new String(packet.getData(), 0, packet.getLength()));
-
-        return decodePUTCHUNK(Arrays.copyOf(packet.getData(), packet.getLength()));
     }
 
     private void sendResponse(PutchunkMessage PCmessage) {
@@ -67,8 +48,8 @@ public class Storer {
 
         try {
             DatagramPacket packet = new DatagramPacket(buf, buf.length,
-                InetAddress.getByName(connectionInfo.getControlChannelHostname()), connectionInfo.getControlPort());
-                connectionInfo.getControlChannelSocket().send(packet);
+                InetAddress.getByName(PeerController.connectionInfo.getControlChannelHostname()), PeerController.connectionInfo.getControlPort());
+                PeerController.connectionInfo.getControlChannelSocket().send(packet);
         }catch(UnknownHostException e){
             e.printStackTrace();
         }catch(IOException e){

@@ -28,7 +28,7 @@ public class PutchunkMessage extends PeerMessage {
     public static PutchunkMessage fromString(byte[] src) {
 
 
-        Pattern r = Pattern.compile("(PUTCHUNK)\\s(\\d\\.\\d)\\s(\\d+)\\s(\\w+)\\s(\\d{1,6})\\s(\\d)\\s" +
+        Pattern r = Pattern.compile("(PUTCHUNK)\\s+(\\d\\.\\d)\\s+(\\d+)\\s+(\\w+)\\s+(\\d{1,6})\\s+(\\d)\\s+" +
                 PeerMessage.CRLF +
                 PeerMessage.CRLF
                 );
@@ -89,4 +89,11 @@ public class PutchunkMessage extends PeerMessage {
 
     }
 
+    public String getChunkNo() {
+        return chunkNo;
+    }
+
+    public byte[] getBody() {
+        return body;
+    }
 }

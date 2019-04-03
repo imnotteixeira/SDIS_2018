@@ -32,7 +32,22 @@ public class FileManager {
         }
     }
 
-    public void writeChunk(Path chunkPath, byte[] data) {
+    public static void storeChunk(String dir, String fileId, String chunkNo, byte[] chunkBody) {
+
+            Path path = Paths.get(dir, fileId, chunkNo);
+            if(Files.notExists(path.getParent())) {
+                try {
+                    Files.createDirectories(path.getParent());
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            writeChunk(path, chunkBody);
+    }
+
+
+    public static void writeChunk(Path chunkPath, byte[] data) {
 
         try {
             OutputStream out = new BufferedOutputStream(
