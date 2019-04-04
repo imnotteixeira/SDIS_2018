@@ -37,8 +37,6 @@ public class PutchunkMessage extends PeerMessage {
         Matcher m = r.matcher(new String(src, 0, src.length));
         m.find();
 
-        String test = m.group(0);
-
         byte[] version = m.group(2).getBytes();
         String senderId = m.group(3);
         String fileId = m.group(4);
@@ -95,5 +93,9 @@ public class PutchunkMessage extends PeerMessage {
 
     public byte[] getBody() {
         return body;
+    }
+
+    public String getReplicationDegree() {
+        return replicationDegree;
     }
 }

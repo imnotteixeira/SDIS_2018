@@ -1,22 +1,21 @@
 package com.dbs.listeners;
 
-import com.dbs.PeerConnectionInfo;
-import com.dbs.PeerController;
-import com.dbs.Storer;
+import com.dbs.*;
 import com.dbs.messages.PutchunkMessage;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
-import java.util.Arrays;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class BackupListener extends Listener {
 
 
     private final Storer storer;
 
-    public BackupListener(MulticastSocket socket, ThreadPoolExecutor threadPool, String backup_dir) {
+    public BackupListener(MulticastSocket socket, ScheduledExecutorService threadPool, String backup_dir) {
         super(socket, threadPool);
         this.storer = new Storer(backup_dir);
     }
@@ -39,8 +38,30 @@ public class BackupListener extends Listener {
     }
 
     private void processPacket(DatagramPacket packet) {
-        //ONLY ALLOWING PUTCHUNKS PLX CHANGE
         PutchunkMessage msg = PutchunkMessage.fromString(Arrays.copyOf(packet.getData(), packet.getLength()));
-        this.storer.store(msg);
+
+
+        TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.STORE);
+        ChunkStatus value = new ChunkStatus(new HashSet<>(), Integer.parseInt(msg.getReplicationDegree()));
+        PeerController.getInstance().getTasks().put(key, value);
+
+        int randomWaitTime = (int) (Math.random() * 400);
+
+        System.out.println("Waiting " + randomWaitTime + " ms before trying to store chunk!");
+
+        threadPool.schedule(()->this.processStorage(key, msg), randomWaitTime, TimeUnit.MILLISECONDS);
+    }
+
+    private void processStorage(TaskLogKey key, PutchunkMessage msg) {
+
+        ChunkStatus status = PeerController.getInstance().getTasks().get(key);
+
+
+        System.out.println("The current replication degree is " + status.getPeers().size() + ". The desired one is " + status.desiredReplication);
+        if(status.getPeers().size() < status.desiredReplication) {
+            System.out.println("Sending STORED!");
+            this.storer.store(msg);
+
+        }
     }
 }

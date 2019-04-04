@@ -2,7 +2,12 @@ package com.dbs;
 
 public class Peer {
 
-    private static String PEER_ID;
+    public static String PEER_ID;
+    public static String VERSION;
+    public static String RMI_NAME;
+    public static String MC_ADDRESS;
+    public static String MDB_ADDRESS;
+    public static String MDR_ADDRESS;
 
     public static void main(String[] args) {
 
@@ -11,14 +16,14 @@ public class Peer {
             return;
         }
 
-        final String VERSION = args[0];
-        final String PEER_ID = args[1];
-        final String RMI_NAME = args[2];
-        final String MC_ADDRESS = args[3];
-        final String MDB_ADDRESS = args[4];
-        final String MDR_ADDRESS = args[5];
+        VERSION = args[0];
+        PEER_ID = args[1];
+        RMI_NAME = args[2];
+        MC_ADDRESS = args[3];
+        MDB_ADDRESS = args[4];
+        MDR_ADDRESS = args[5];
 
-        PeerController peerController = new PeerController(VERSION, PEER_ID, RMI_NAME, MC_ADDRESS, MDB_ADDRESS, MDR_ADDRESS);
+        PeerController peerController = PeerController.getInstance();
 
         peerController.start();
 

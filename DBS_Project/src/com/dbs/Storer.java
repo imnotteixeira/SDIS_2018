@@ -2,6 +2,7 @@ package com.dbs;
 
 import com.dbs.filemanager.FileManager;
 import com.dbs.messages.PutchunkMessage;
+import com.dbs.messages.StoredMessage;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -22,19 +23,14 @@ public class Storer {
 
     public void store(PutchunkMessage msg){
         if(Integer.parseInt(msg.getSenderId()) != PeerController.connectionInfo.getSenderId()) {
-            FileManager.storeChunk(this.BACKUP_DIR, msg.getFileId(), msg.getChunkNo(), msg.getBody());
+            FileManager.storeChunk(PeerController.getInstance().getBackupDir(), msg.getFileId(), msg.getChunkNo(), msg.getBody());
             sendResponse(msg);
         }
     }
 
     private void sendResponse(PutchunkMessage PCmessage) {
-        int random = (int) Math.random()*400;
 
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-
-        executor.schedule(()-> sendSTORED(PCmessage), random, TimeUnit.MILLISECONDS);
-
-        executor.shutdown();
+        sendSTORED(PCmessage);
     }
 
     private PutchunkMessage decodePUTCHUNK(byte[] encodedData){
@@ -43,18 +39,14 @@ public class Storer {
 
     }
 
+    //THIS IS PROBABLY WRONG PLX FIX -- maybe fixed now?
     private void sendSTORED(PutchunkMessage receivedPUTCHUNK){
-        byte[] buf = "STORED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>".getBytes();
+        StoredMessage msg = new StoredMessage(receivedPUTCHUNK.getVersion(), Peer.PEER_ID, receivedPUTCHUNK.getFileId(), receivedPUTCHUNK.getChunkNo());
 
-        try {
-            DatagramPacket packet = new DatagramPacket(buf, buf.length,
-                InetAddress.getByName(PeerController.connectionInfo.getControlChannelHostname()), PeerController.connectionInfo.getControlPort());
-                PeerController.connectionInfo.getControlChannelSocket().send(packet);
-        }catch(UnknownHostException e){
-            e.printStackTrace();
-        }catch(IOException e){
-            e.printStackTrace();
-        }
+        msg.send(PeerController.getInstance().getConnectionInfo().getControlChannelSocket(),
+                PeerController.getInstance().getConnectionInfo().getControlChannelHostname(),
+                PeerController.getInstance().getConnectionInfo().getControlPort());
+
     }
 
 }

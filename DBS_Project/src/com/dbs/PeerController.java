@@ -2,14 +2,18 @@ package com.dbs;
 
 import com.dbs.filemanager.FileManager;
 import com.dbs.listeners.BackupListener;
+import com.dbs.listeners.ControlListener;
 import com.dbs.listeners.Listener;
+import com.dbs.messages.PeerMessage;
 import com.dbs.messages.PutchunkMessage;
+import com.dbs.messages.StoredMessage;
 import com.dbs.utils.ByteToHex;
 import com.dbs.utils.NetworkAddress;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.nio.charset.StandardCharsets;
@@ -29,11 +33,7 @@ import java.util.concurrent.*;
 
 public class PeerController {
 
-    public static int CORE_THREADS = 10;
-    public static int MAX_POOL_SIZE = 100;
-
-    public static int KEEP_ALIVE_TIME = 30;
-
+    private final int CHUNK_SIZE = (int) 64e3;
     private String rmi_name;
     public static PeerConnectionInfo connectionInfo;
     private final String BACKUP_DIR;
@@ -41,12 +41,33 @@ public class PeerController {
     private Registry reg = null;
     private PeerRemoteObject peer_remote_object = null;
 
+    private ConcurrentHashMap<TaskLogKey, ChunkStatus> tasks = new ConcurrentHashMap<TaskLogKey, ChunkStatus>();
+
+    private ScheduledExecutorService threadPool;
 
 
-    private final int CHUNK_SIZE = (int) 64e3;
+    private static PeerController instance = null;
+
+       // The static method that controls access to the singleton
+    // instance.
+    public static PeerController getInstance() {
+
+        if (instance == null) {
+            instance = new PeerController(
+                    Peer.VERSION,
+                    Peer.PEER_ID,
+                    Peer.RMI_NAME,
+                    Peer.MC_ADDRESS,
+                    Peer.MDB_ADDRESS,
+                    Peer.MDR_ADDRESS
+            );
+        }
+
+        return instance;
+    }
 
 
-    public PeerController(String version, String peer_id, String rmi_name, String mc_address, String mdb_address, String mdr_address) {
+    private PeerController(String version, String peer_id, String rmi_name, String mc_address, String mdb_address, String mdr_address) {
 
         this.rmi_name = rmi_name;
 
@@ -120,6 +141,8 @@ public class PeerController {
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);
 
+        this.threadPool = Executors.newScheduledThreadPool(10);
+
         Future<String> controlChannelListener = executorService.submit(() -> startControlChannelListener());
         Future<String> backupChannelListener = executorService.submit(() -> startBackupChannelListener());
         Future<String> restoreChannelListener = executorService.submit(() -> startRestoreChannelListener());
@@ -138,7 +161,9 @@ public class PeerController {
         }
 
         //START LISTENING HERE
-
+        Listener controlChannelListener = new ControlListener(connectionInfo.getControlChannelSocket(), this.threadPool);
+        log("Listening for control messages...");
+        controlChannelListener.listen();
 
 
         return "";
@@ -159,15 +184,10 @@ public class PeerController {
 
 
         //START LISTENING HERE
-        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
-                PeerController.CORE_THREADS,
-                PeerController.MAX_POOL_SIZE,
-                PeerController.KEEP_ALIVE_TIME,
-                TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>());
 
-        Listener backupChannelListener = new BackupListener(connectionInfo.getBackupChannelSocket(), threadPoolExecutor, this.BACKUP_DIR);
-        log("Listening for control messages...");
+
+        Listener backupChannelListener = new BackupListener(connectionInfo.getBackupChannelSocket(), this.threadPool, this.BACKUP_DIR);
+        log("Listening for backup messages...");
         backupChannelListener.listen();
 
         return "";
@@ -265,13 +285,54 @@ public class PeerController {
     }
 
     private void putchunk(String fileId, byte[] chunk, int chunkNo, int replicationDegree) {
+
+        /**********************************/
+        // criar um runnable com isto, que tem num de attempts, e que da schedule dele proprio com delay 2^nAttempt
+        // inicialmente chama se um thread cenas que executa este runnable com n attempts a 0.
+        // se nao for cancelado devido à receçao de stored suficientes, da schedule a ele proprio com nAttempts +1
         System.out.println("Sending PUTCHUNK");
+
 
         PutchunkMessage msg = new PutchunkMessage(connectionInfo.getVersion(), String.valueOf(connectionInfo.getSenderId()), fileId, String.valueOf(chunkNo), String.valueOf(replicationDegree), chunk);
 
+
         msg.send(connectionInfo.getBackupChannelSocket(), connectionInfo.getBackupChannelHostname(), connectionInfo.getBackupPort());
 
+        /*******************************/
 
+        //quando se recebe um stored, se o replication factor for atingido, cancelar a cena anterior
+
+    }
+
+    private void processPacket(DatagramPacket packet) {
+        String msgType = PeerMessage.getMessageType(new String(packet.getData(), 0, packet.getLength()));
+
+        switch (msgType) {
+            case "STORED":
+                processStoredMsg(packet);
+                break;
+        }
+    }
+
+    private void processStoredMsg(DatagramPacket packet) {
+
+        StoredMessage msg = StoredMessage.fromString(new String(packet.getData(), 0, packet.getLength()).getBytes());
+
+        TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.STORE);
+
+        if(this.tasks.containsKey(key)) {
+            if(!this.tasks.get(key).peers.contains(Integer.parseInt(msg.getSenderId()))) { //Peer has not already stored
+                this.tasks.get(key).addPeer(msg.getSenderId());
+            }
+        }
+
+    }
+
+    private boolean replicationDegreeReached(String fileId, int chunkNo, TaskType taskType) {
+        TaskLogKey key = new TaskLogKey(fileId, chunkNo, taskType);
+        ChunkStatus chunkStatus = this.tasks.get(key);
+
+        return chunkStatus.peers.size() >= chunkStatus.desiredReplication;
     }
 
     public void log(String msg) {
@@ -280,5 +341,13 @@ public class PeerController {
 
     public String getBackupDir() {
         return BACKUP_DIR;
+    }
+
+    public ConcurrentHashMap<TaskLogKey, ChunkStatus> getTasks() {
+        return tasks;
+    }
+
+    public PeerConnectionInfo getConnectionInfo() {
+        return connectionInfo;
     }
 }
