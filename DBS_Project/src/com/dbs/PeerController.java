@@ -1,19 +1,17 @@
 package com.dbs;
 
 import com.dbs.filemanager.FileManager;
+import com.dbs.handlers.PutchunkHandler;
 import com.dbs.listeners.BackupListener;
 import com.dbs.listeners.ControlListener;
 import com.dbs.listeners.Listener;
-import com.dbs.messages.PeerMessage;
-import com.dbs.messages.PutchunkMessage;
-import com.dbs.messages.StoredMessage;
 import com.dbs.utils.ByteToHex;
+import com.dbs.utils.Logger;
 import com.dbs.utils.NetworkAddress;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.nio.charset.StandardCharsets;
@@ -29,11 +27,13 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.concurrent.*;
 
 public class PeerController {
 
     private final int CHUNK_SIZE = (int) 64e3;
+//    private final int CHUNK_SIZE = 5;
     private String rmi_name;
     public static PeerConnectionInfo connectionInfo;
     private final String BACKUP_DIR;
@@ -41,7 +41,8 @@ public class PeerController {
     private Registry reg = null;
     private PeerRemoteObject peer_remote_object = null;
 
-    private ConcurrentHashMap<TaskLogKey, ChunkStatus> tasks = new ConcurrentHashMap<TaskLogKey, ChunkStatus>();
+    private ConcurrentHashMap<TaskLogKey, ChunkStatus> tasks = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<TaskLogKey, ScheduledFuture> taskFutures = new ConcurrentHashMap<>();
 
     private ScheduledExecutorService threadPool;
 
@@ -95,21 +96,18 @@ public class PeerController {
 
     public void start() {
 
-        log("Starting Peer...");
+        Logger.log("Starting Peer...");
 
         FileManager fm = new FileManager();
-        log("Initialized File Manager.");
+        Logger.log("Initialized File Manager.");
 
         initializeRemoteObject(fm);
-        log("Initialized Remote Object.");
+        Logger.log("Initialized Remote Object.");
 
 
-        log("Peer Ready.");
-
-
+        Logger.log("Peer Ready.");
 
     }
-
 
     public void initializeRemoteObject(FileManager fm) {
         this.peer_remote_object = new PeerRemoteObject(this, fm);
@@ -152,17 +150,20 @@ public class PeerController {
     private String startControlChannelListener() {
         try {
             //Connect to Control Channel
-            connectionInfo.setControlChannelSocket(new MulticastSocket(connectionInfo.getControlPort()));
+            MulticastSocket socket = new MulticastSocket(connectionInfo.getControlPort());
+
             InetAddress mc_group = InetAddress.getByName(connectionInfo.getControlChannelHostname());
-            connectionInfo.getControlChannelSocket().joinGroup(mc_group);
-            log("Joined Control Channel at " + connectionInfo.getControlChannelHostname() + ":" + connectionInfo.getControlPort());
+            socket.joinGroup(mc_group);
+
+            connectionInfo.setControlChannelCommunicator(new Communicator(socket));
+            Logger.log("Joined Control Channel at " + connectionInfo.getControlChannelHostname() + ":" + connectionInfo.getControlPort());
         } catch (IOException e) {
             return "IO ERROR";
         }
 
         //START LISTENING HERE
-        Listener controlChannelListener = new ControlListener(connectionInfo.getControlChannelSocket(), this.threadPool);
-        log("Listening for control messages...");
+        Listener controlChannelListener = new ControlListener();
+        Logger.log("Listening for control messages...");
         controlChannelListener.listen();
 
 
@@ -173,21 +174,19 @@ public class PeerController {
         try {
 
             //Connect to Backup Channel
-            connectionInfo.setBackupChannelSocket(new MulticastSocket(connectionInfo.getBackupPort()));
+            MulticastSocket socket = new MulticastSocket(connectionInfo.getBackupPort());
+
+            connectionInfo.setBackupChannelCommunicator(new Communicator(socket));
             InetAddress mdb_group = InetAddress.getByName(connectionInfo.getBackupChannelHostname());
-            connectionInfo.getBackupChannelSocket().joinGroup(mdb_group);
-            log("Joined Backup Channel at " + connectionInfo.getBackupChannelHostname() + ":" + connectionInfo.getBackupPort());
+            socket.joinGroup(mdb_group);
+            Logger.log("Joined Backup Channel at " + connectionInfo.getBackupChannelHostname() + ":" + connectionInfo.getBackupPort());
         } catch (IOException e) {
             return "IO ERROR";
         }
 
-
-
         //START LISTENING HERE
-
-
-        Listener backupChannelListener = new BackupListener(connectionInfo.getBackupChannelSocket(), this.threadPool, this.BACKUP_DIR);
-        log("Listening for backup messages...");
+        Listener backupChannelListener = new BackupListener();
+        Logger.log("Listening for backup messages...");
         backupChannelListener.listen();
 
         return "";
@@ -197,10 +196,14 @@ public class PeerController {
         try {
 
             //Connect to Recovery Channel
-            connectionInfo.setRecoveryChannelSocket(new MulticastSocket(connectionInfo.getRecoveryPort()));
+            MulticastSocket socket = new MulticastSocket(connectionInfo.getRecoveryPort());
+
+
             InetAddress mdr_group = InetAddress.getByName(connectionInfo.getRecoveryChannelHostname());
-            connectionInfo.getRecoveryChannelSocket().joinGroup(mdr_group);
-            log("Joined Recovery Channel at " + connectionInfo.getRecoveryChannelHostname() + ":" + connectionInfo.getRecoveryPort());
+            socket.joinGroup(mdr_group);
+
+            connectionInfo.setRecoveryChannelCommunicator(new Communicator(socket));
+            Logger.log("Joined Recovery Channel at " + connectionInfo.getRecoveryChannelHostname() + ":" + connectionInfo.getRecoveryPort());
         } catch (IOException e) {
             return "IO ERROR";
         }
@@ -211,6 +214,9 @@ public class PeerController {
 
 
     public void close() {
+
+        System.out.println("Closing Peer, need to close sockets also, please implement me!");
+
         try {
             this.reg.unbind(this.rmi_name);
             UnicastRemoteObject.unexportObject(this.peer_remote_object,true);
@@ -218,7 +224,7 @@ public class PeerController {
             e.printStackTrace();
         }
 
-        log("Peer Disconnected. Press Enter to exit.");
+        Logger.log("Peer Disconnected. Press Enter to exit.");
         new java.util.Scanner(System.in).nextLine();
     }
 
@@ -236,10 +242,10 @@ public class PeerController {
 
             String fileId = ByteToHex.convert(fileId_hash);
 
-            System.out.println("Saving File...");
-            System.out.println("File Name: " + path.getFileName().toString());
-            System.out.println("Creation Time: " + attr.creationTime());
-            System.out.println("File ID: " + fileId);
+            Logger.log("Received Backup Request :");
+            Logger.log("File Name: " + path.getFileName().toString());
+            Logger.log("Creation Time: " + attr.creationTime());
+            Logger.log("File ID: " + fileId);
 
 
             processFile(fileId, path, replicationDegree);
@@ -275,7 +281,9 @@ public class PeerController {
                     putchunk(fileId, lastChunk, chunkNo, replicationDegree);
                     break;
                 }
-                putchunk(fileId, chunk, chunkNo, replicationDegree);
+
+                byte[] chunkToSend = Arrays.copyOf(chunk, chunkLen);
+                putchunk(fileId, chunkToSend, chunkNo, replicationDegree);
 
 
             }
@@ -286,57 +294,20 @@ public class PeerController {
 
     private void putchunk(String fileId, byte[] chunk, int chunkNo, int replicationDegree) {
 
-        /**********************************/
-        // criar um runnable com isto, que tem num de attempts, e que da schedule dele proprio com delay 2^nAttempt
-        // inicialmente chama se um thread cenas que executa este runnable com n attempts a 0.
-        // se nao for cancelado devido à receçao de stored suficientes, da schedule a ele proprio com nAttempts +1
-        System.out.println("Sending PUTCHUNK");
+        TaskLogKey key = new TaskLogKey(fileId, chunkNo, TaskType.STORE);
+        ChunkStatus value = new ChunkStatus(new HashSet<>(), replicationDegree);
+        PeerController.getInstance().getTasks().put(key, value);
 
-
-        PutchunkMessage msg = new PutchunkMessage(connectionInfo.getVersion(), String.valueOf(connectionInfo.getSenderId()), fileId, String.valueOf(chunkNo), String.valueOf(replicationDegree), chunk);
-
-
-        msg.send(connectionInfo.getBackupChannelSocket(), connectionInfo.getBackupChannelHostname(), connectionInfo.getBackupPort());
-
-        /*******************************/
-
-        //quando se recebe um stored, se o replication factor for atingido, cancelar a cena anterior
+        PutchunkHandler handler = new PutchunkHandler(fileId, chunkNo, replicationDegree, chunk);
+        handler.send();
 
     }
 
-    private void processPacket(DatagramPacket packet) {
-        String msgType = PeerMessage.getMessageType(new String(packet.getData(), 0, packet.getLength()));
-
-        switch (msgType) {
-            case "STORED":
-                processStoredMsg(packet);
-                break;
-        }
-    }
-
-    private void processStoredMsg(DatagramPacket packet) {
-
-        StoredMessage msg = StoredMessage.fromString(new String(packet.getData(), 0, packet.getLength()).getBytes());
-
-        TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.STORE);
-
-        if(this.tasks.containsKey(key)) {
-            if(!this.tasks.get(key).peers.contains(Integer.parseInt(msg.getSenderId()))) { //Peer has not already stored
-                this.tasks.get(key).addPeer(msg.getSenderId());
-            }
-        }
-
-    }
-
-    private boolean replicationDegreeReached(String fileId, int chunkNo, TaskType taskType) {
+    public boolean replicationDegreeReached(String fileId, int chunkNo, TaskType taskType) {
         TaskLogKey key = new TaskLogKey(fileId, chunkNo, taskType);
         ChunkStatus chunkStatus = this.tasks.get(key);
 
         return chunkStatus.peers.size() >= chunkStatus.desiredReplication;
-    }
-
-    public void log(String msg) {
-        System.out.println("[" + connectionInfo.getSenderId() + "] " + msg);
     }
 
     public String getBackupDir() {
@@ -349,5 +320,13 @@ public class PeerController {
 
     public PeerConnectionInfo getConnectionInfo() {
         return connectionInfo;
+    }
+
+    public ScheduledExecutorService getThreadPool() {
+        return threadPool;
+    }
+
+    public ConcurrentHashMap<TaskLogKey, ScheduledFuture> getTaskFutures() {
+        return taskFutures;
     }
 }

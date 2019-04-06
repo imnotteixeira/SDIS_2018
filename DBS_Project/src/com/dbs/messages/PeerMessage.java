@@ -32,7 +32,7 @@ abstract public class PeerMessage {
         return msg.substring(0, msg.indexOf(" "));
     }
 
-    abstract public void send(MulticastSocket socket, String host, int port);
+    abstract public void send(String host, int port);
 
     public byte[] getVersion() {
         return version;

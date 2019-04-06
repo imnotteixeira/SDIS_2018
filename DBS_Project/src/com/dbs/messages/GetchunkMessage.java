@@ -11,7 +11,7 @@ public class GetchunkMessage extends PeerMessage {
     }
 
     @Override
-    public void send(MulticastSocket socket, String host, int port) {
+    public void send(String host, int port) {
 
     }
 }

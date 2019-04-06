@@ -1,14 +1,12 @@
 package com.dbs;
 
-import java.net.MulticastSocket;
-
 public class PeerConnectionInfo {
 
     private int senderId, controlPort, backupPort, recoveryPort;
     private byte[] version;
     private String controlChannelHostname, backupChannelHostname, recoveryChannelHostname;
 
-    private MulticastSocket controlChannelSocket, backupChannelSocket, recoveryChannelSocket;
+    private Communicator controlChannelCommunicator, backupChannelCommunicator, recoveryChannelCommunicator;
 
     public PeerConnectionInfo(int senderId, byte[] version, String controlChannelHostname, int controlPort, String backupChannelHostname, int backupPort, String recoveryChannelHostname, int recoveryPort) {
         this.senderId = senderId;
@@ -53,28 +51,28 @@ public class PeerConnectionInfo {
         return recoveryChannelHostname;
     }
 
-    public MulticastSocket getControlChannelSocket() {
-        return controlChannelSocket;
+    public Communicator getControlChannelCommunicator() {
+        return controlChannelCommunicator;
     }
 
-    public MulticastSocket getBackupChannelSocket() {
-        return backupChannelSocket;
+    public Communicator getBackupChannelCommunicator() {
+        return backupChannelCommunicator;
     }
 
-    public MulticastSocket getRecoveryChannelSocket() {
-        return recoveryChannelSocket;
+    public Communicator getRecoveryChannelCommunicator() {
+        return recoveryChannelCommunicator;
     }
 
 
-    public void setControlChannelSocket(MulticastSocket controlChannelSocket) {
-        this.controlChannelSocket = controlChannelSocket;
+    public void setControlChannelCommunicator(Communicator controlChannelCommunicator) {
+        this.controlChannelCommunicator = controlChannelCommunicator;
     }
 
-    public void setBackupChannelSocket(MulticastSocket backupChannelSocket) {
-        this.backupChannelSocket = backupChannelSocket;
+    public void setBackupChannelCommunicator(Communicator backupChannelCommunicator) {
+        this.backupChannelCommunicator = backupChannelCommunicator;
     }
 
-    public void setRecoveryChannelSocket(MulticastSocket recoveryChannelSocket) {
-        this.recoveryChannelSocket = recoveryChannelSocket;
+    public void setRecoveryChannelCommunicator(Communicator recoveryChannelCommunicator) {
+        this.recoveryChannelCommunicator = recoveryChannelCommunicator;
     }
 }

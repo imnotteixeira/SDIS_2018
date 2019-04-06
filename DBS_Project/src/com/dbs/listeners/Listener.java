@@ -1,20 +1,36 @@
 package com.dbs.listeners;
 
-import java.net.MulticastSocket;
+import com.dbs.Communicator;
+
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public abstract class Listener {
 
     public static final int BUF_SIZE = 65622;
 
-    MulticastSocket socket;
+    Communicator communicator;
     ScheduledExecutorService threadPool;
 
-    public Listener(MulticastSocket socket, ScheduledExecutorService threadPool) {
-        this.socket = socket;
+    public Listener(Communicator communicator, ScheduledExecutorService threadPool) {
+        this.communicator = communicator;
         this.threadPool = threadPool;
     }
 
-    public abstract void listen();
+    public void listen() {
+
+
+        while(true) {
+            try {
+                DatagramPacket packet = communicator.receive();
+                threadPool.submit(() -> processPacket(packet));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    protected abstract void processPacket(DatagramPacket packet);
 }

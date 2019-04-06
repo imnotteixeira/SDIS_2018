@@ -1,5 +1,7 @@
 package com.dbs.messages;
 
+import com.dbs.PeerController;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -34,14 +36,13 @@ public class StoredMessage extends PeerMessage {
     }
 
     @Override
-    public void send(MulticastSocket socket, String hostname, int port) {
+    public void send(String hostname, int port) {
         final byte[] msg = getByteMsg();
 
-        try {
-            DatagramPacket packet = new DatagramPacket(msg, msg.length,
-                    InetAddress.getByName(hostname), port);
 
-            socket.send(packet);
+
+        try {
+            PeerController.getInstance().getConnectionInfo().getBackupChannelCommunicator().send(msg, hostname, port);
         } catch (IOException e) {
             e.printStackTrace();
         }

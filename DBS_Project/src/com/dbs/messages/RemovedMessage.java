@@ -1,7 +1,5 @@
 package com.dbs.messages;
 
-import java.net.MulticastSocket;
-
 public class RemovedMessage extends PeerMessage {
     private final String chunkNo;
 
@@ -11,7 +9,7 @@ public class RemovedMessage extends PeerMessage {
     }
 
     @Override
-    public void send(MulticastSocket socket, String host, int port) {
+    public void send(String host, int port) {
 
     }
 }

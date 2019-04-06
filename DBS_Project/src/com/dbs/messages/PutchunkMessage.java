@@ -1,10 +1,9 @@
 package com.dbs.messages;
 
+import com.dbs.PeerController;
+
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.regex.Matcher;
@@ -45,7 +44,7 @@ public class PutchunkMessage extends PeerMessage {
 
         int headerSize = m.group(0).getBytes().length;
 
-        byte[] body = Arrays.copyOfRange(src, headerSize, src.length - 1);
+        byte[] body = Arrays.copyOfRange(src, headerSize, src.length);
 
 
         return new PutchunkMessage(version, senderId, fileId, chunkNo, replicationDegree, body);
@@ -69,17 +68,13 @@ public class PutchunkMessage extends PeerMessage {
 
 
     @Override
-    public void send(MulticastSocket socket, String hostname, int port) {
-
-
+    public void send(String hostname, int port) {
 
         final byte[] msg = getByteMsg();
 
         try {
-        DatagramPacket packet = new DatagramPacket(msg, msg.length,
-                    InetAddress.getByName(hostname), port);
+            PeerController.getInstance().getConnectionInfo().getBackupChannelCommunicator().send(msg, hostname, port);
 
-            socket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }

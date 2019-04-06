@@ -1,3 +1,3 @@
 package com.dbs;
 
-public enum TaskType {STORE}
+public enum TaskType {STORE, PUTCHUNK}
