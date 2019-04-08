@@ -2,14 +2,20 @@ package com.dbs;
 
 import java.util.HashSet;
 
-public class ChunkStatus {
+public class ChunkInfo {
 
     public HashSet<Integer> peers;
     public int desiredReplication;
+    public byte[] data;
 
-    public ChunkStatus(HashSet<Integer> peers, int desiredReplication) {
+    public ChunkInfo(HashSet<Integer> peers, int desiredReplication) {
         this.peers = peers;
         this.desiredReplication = desiredReplication;
+    }
+
+    public ChunkInfo(HashSet<Integer> peers, byte[] data) {
+        this.peers = peers;
+        this.data = data;
     }
 
     public HashSet<Integer> getPeers() {
@@ -20,15 +26,12 @@ public class ChunkStatus {
         return desiredReplication;
     }
 
+    public byte[] getData() {
+        return data;
+    }
+
     public void addPeer(String senderId) {
         this.peers.add(Integer.parseInt(senderId));
     }
 
-    @Override
-    public String toString() {
-        return "ChunkStatus{" +
-                "n_peers=" + peers.size() +
-                ", desiredReplication=" + desiredReplication +
-                '}';
-    }
 }

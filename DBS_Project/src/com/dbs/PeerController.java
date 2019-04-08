@@ -5,6 +5,7 @@ import com.dbs.handlers.PutchunkHandler;
 import com.dbs.listeners.BackupListener;
 import com.dbs.listeners.ControlListener;
 import com.dbs.listeners.Listener;
+import com.dbs.listeners.RecoveryListener;
 import com.dbs.utils.ByteToHex;
 import com.dbs.utils.Logger;
 import com.dbs.utils.NetworkAddress;
@@ -41,7 +42,7 @@ public class PeerController {
     private Registry reg = null;
     private PeerRemoteObject peer_remote_object = null;
 
-    private ConcurrentHashMap<TaskLogKey, ChunkStatus> tasks = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<TaskLogKey, ChunkInfo> tasks = new ConcurrentHashMap<>();
     private ConcurrentHashMap<TaskLogKey, ScheduledFuture> taskFutures = new ConcurrentHashMap<>();
 
     private ScheduledExecutorService threadPool;
@@ -143,7 +144,7 @@ public class PeerController {
 
         Future<String> controlChannelListener = executorService.submit(() -> startControlChannelListener());
         Future<String> backupChannelListener = executorService.submit(() -> startBackupChannelListener());
-        Future<String> restoreChannelListener = executorService.submit(() -> startRestoreChannelListener());
+        Future<String> recoveryChannelListener = executorService.submit(() -> startRestoreChannelListener());
 
     }
 
@@ -198,17 +199,19 @@ public class PeerController {
             //Connect to Recovery Channel
             MulticastSocket socket = new MulticastSocket(connectionInfo.getRecoveryPort());
 
-
+            connectionInfo.setRecoveryChannelCommunicator(new Communicator(socket));
             InetAddress mdr_group = InetAddress.getByName(connectionInfo.getRecoveryChannelHostname());
             socket.joinGroup(mdr_group);
-
-            connectionInfo.setRecoveryChannelCommunicator(new Communicator(socket));
             Logger.log("Joined Recovery Channel at " + connectionInfo.getRecoveryChannelHostname() + ":" + connectionInfo.getRecoveryPort());
+
         } catch (IOException e) {
             return "IO ERROR";
         }
 
         //START LISTENING HERE
+        Listener recoveryChannelListener = new RecoveryListener();
+        Logger.log("Listening for recovery messages...");
+        recoveryChannelListener.listen();
         return "";
     }
 
@@ -295,7 +298,7 @@ public class PeerController {
     private void putchunk(String fileId, byte[] chunk, int chunkNo, int replicationDegree) {
 
         TaskLogKey key = new TaskLogKey(fileId, chunkNo, TaskType.STORE);
-        ChunkStatus value = new ChunkStatus(new HashSet<>(), replicationDegree);
+        ChunkInfo value = new ChunkInfo(new HashSet<>(), replicationDegree);
         PeerController.getInstance().getTasks().put(key, value);
 
         PutchunkHandler handler = new PutchunkHandler(fileId, chunkNo, replicationDegree, chunk);
@@ -305,16 +308,16 @@ public class PeerController {
 
     public boolean replicationDegreeReached(String fileId, int chunkNo, TaskType taskType) {
         TaskLogKey key = new TaskLogKey(fileId, chunkNo, taskType);
-        ChunkStatus chunkStatus = this.tasks.get(key);
+        ChunkInfo chunkInfo = this.tasks.get(key);
 
-        return chunkStatus.peers.size() >= chunkStatus.desiredReplication;
+        return chunkInfo.peers.size() >= chunkInfo.desiredReplication;
     }
 
     public String getBackupDir() {
         return BACKUP_DIR;
     }
 
-    public ConcurrentHashMap<TaskLogKey, ChunkStatus> getTasks() {
+    public ConcurrentHashMap<TaskLogKey, ChunkInfo> getTasks() {
         return tasks;
     }
 

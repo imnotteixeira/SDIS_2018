@@ -62,4 +62,8 @@ public class GetchunkMessage extends PeerMessage {
 
         return new GetchunkMessage(version, senderId, fileId, chunkNo);
     }
+
+    public String getChunkNo() {
+        return chunkNo;
+    }
 }

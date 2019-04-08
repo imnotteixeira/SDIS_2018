@@ -72,4 +72,12 @@ public class ChunkMessage extends PeerMessage {
             e.printStackTrace();
         }
     }
+
+    public String getChunkNo() {
+        return chunkNo;
+    }
+
+    public byte[] getBody() {
+        return body;
+    }
 }

@@ -12,10 +12,14 @@ public class Storer {
 
             FileManager.storeChunk(PeerController.getInstance().getBackupDir(), msg.getFileId(), msg.getChunkNo(), msg.getBody());
             sendStoredMsg(msg);
+
+            //Storing the fact that this peer has the chunk, because it won't parse the incoming STORED message
+            TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.STORE);
+            PeerController.getInstance().getTasks().get(key).addPeer(msg.getSenderId());
         }
     }
 
-    //THIS IS PROBABLY WRONG PLX FIX -- maybe fixed now?
+
     private void sendStoredMsg(PutchunkMessage receivedPUTCHUNK){
         StoredMessage msg = new StoredMessage(receivedPUTCHUNK.getVersion(), Peer.PEER_ID, receivedPUTCHUNK.getFileId(), receivedPUTCHUNK.getChunkNo());
 

@@ -3,9 +3,9 @@ package com.dbs;
 import java.util.Objects;
 
 public class TaskLogKey {
-    String fileId;
-    int chunkNo;
-    TaskType msgType;
+    public String fileId;
+    public int chunkNo;
+    public TaskType msgType;
 
     public TaskLogKey(String fileId, int chunkNo, TaskType msgType) {
         this.fileId = fileId;
@@ -35,4 +35,6 @@ public class TaskLogKey {
     public int hashCode() {
         return Objects.hash(fileId, chunkNo, msgType);
     }
+
+
 }

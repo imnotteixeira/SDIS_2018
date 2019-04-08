@@ -1,9 +1,6 @@
 package com.dbs.filemanager;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -86,6 +83,23 @@ public class FileManager {
         }
 
         return result;
+    }
+
+    public static byte[] getChunk(String dir, String fileId, int chunkNo) throws FileNotFoundException {
+        Path path = Paths.get(dir, fileId , String.valueOf(chunkNo));
+
+        byte[] data = new byte[0];
+
+        if(Files.notExists(path)) {
+            throw new FileNotFoundException();
+        } else {
+            try {
+                data = new String(Files.readAllBytes(path)).getBytes();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return data;
     }
 }
 
