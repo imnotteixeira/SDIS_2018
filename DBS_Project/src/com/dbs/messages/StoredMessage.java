@@ -3,11 +3,7 @@ package com.dbs.messages;
 import com.dbs.PeerController;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,8 +35,6 @@ public class StoredMessage extends PeerMessage {
     public void send(String hostname, int port) {
         final byte[] msg = getByteMsg();
 
-
-
         try {
             PeerController.getInstance().getConnectionInfo().getBackupChannelCommunicator().send(msg, hostname, port);
         } catch (IOException e) {
@@ -48,7 +42,7 @@ public class StoredMessage extends PeerMessage {
         }
     }
 
-    public static StoredMessage fromString(byte[] src) {
+    public static StoredMessage fromString(byte[] src) throws IllegalStateException {
 
         Pattern r = Pattern.compile("(STORED)\\s+(\\d\\.\\d)\\s+(\\d+)\\s+(\\w+)\\s+(\\d{1,6})\\s+" +
                 PeerMessage.CRLF +

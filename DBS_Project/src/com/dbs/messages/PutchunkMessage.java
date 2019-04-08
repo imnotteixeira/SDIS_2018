@@ -24,7 +24,7 @@ public class PutchunkMessage extends PeerMessage {
         this.headerSize = this.toString().getBytes().length + PeerMessage.CRLF.getBytes().length * 2;
     }
 
-    public static PutchunkMessage fromString(byte[] src) {
+    public static PutchunkMessage fromString(byte[] src) throws IllegalStateException {
 
 
         Pattern r = Pattern.compile("(PUTCHUNK)\\s+(\\d\\.\\d)\\s+(\\d+)\\s+(\\w+)\\s+(\\d{1,6})\\s+(\\d)\\s+" +
