@@ -68,7 +68,10 @@ public class PutchunkMessage extends PeerMessage {
 
 
     @Override
-    public void send(String hostname, int port) {
+    public void send() {
+
+        String hostname = PeerController.connectionInfo.getBackupChannelHostname();
+        int port = PeerController.connectionInfo.getBackupPort();
 
         final byte[] msg = getByteMsg();
 

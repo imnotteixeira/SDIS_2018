@@ -116,10 +116,7 @@ public class ControlListener extends Listener {
                 chunkData
         );
 
-        msg.send(
-                PeerController.connectionInfo.getRecoveryChannelHostname(),
-                PeerController.connectionInfo.getRecoveryPort()
-        );
+        msg.send();
 
         Logger.log("Sent CHUNK message for file: " + key.fileId);
 

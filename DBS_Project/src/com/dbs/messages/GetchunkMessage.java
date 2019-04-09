@@ -32,7 +32,11 @@ public class GetchunkMessage extends PeerMessage {
     }
 
     @Override
-    public void send(String hostname, int port) {
+    public void send() {
+
+        String hostname = PeerController.connectionInfo.getControlChannelHostname();
+        int port = PeerController.connectionInfo.getControlPort();
+
         final byte[] msg = getByteMsg();
 
         try {

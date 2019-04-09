@@ -18,8 +18,14 @@ public class PeerRemoteObject implements IPeerInterface {
     @Override
     public void backup(String filePath, int replicationDegree) throws RemoteException {
 
-
         peer.backup(filePath, replicationDegree);
+
+    }
+
+    @Override
+    public void recover(String filePath) throws RemoteException {
+
+        peer.getchunk(filePath);
 
     }
 }

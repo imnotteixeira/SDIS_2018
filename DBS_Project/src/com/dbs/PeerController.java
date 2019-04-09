@@ -6,6 +6,7 @@ import com.dbs.listeners.BackupListener;
 import com.dbs.listeners.ControlListener;
 import com.dbs.listeners.Listener;
 import com.dbs.listeners.RecoveryListener;
+import com.dbs.messages.GetchunkMessage;
 import com.dbs.utils.ByteToHex;
 import com.dbs.utils.Logger;
 import com.dbs.utils.NetworkAddress;
@@ -236,25 +237,17 @@ public class PeerController {
         try {
             Path path = Paths.get(filePath);
 
-            BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
-
-            String fileId_raw = path.getFileName().toString() + attr.creationTime().toString();
-
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] fileId_hash = digest.digest(fileId_raw.getBytes(StandardCharsets.UTF_8));
-
-            String fileId = ByteToHex.convert(fileId_hash);
+            String fileId = FileManager.calcFileId(path);
 
             Logger.log("Received Backup Request :");
             Logger.log("File Name: " + path.getFileName().toString());
-            Logger.log("Creation Time: " + attr.creationTime());
             Logger.log("File ID: " + fileId);
 
 
             processFile(fileId, path, replicationDegree);
 
 
-        } catch (IOException | NoSuchAlgorithmException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -312,6 +305,26 @@ public class PeerController {
 
         return chunkInfo.peers.size() >= chunkInfo.desiredReplication;
     }
+
+    public void getchunk(String filePath) {
+        try {
+            String fileId = FileManager.calcFileId(Paths.get(filePath));
+
+
+            GetchunkMessage msg = new GetchunkMessage(
+                    Peer.VERSION.getBytes(),
+                    Peer.PEER_ID,
+                    fileId,
+                    String.valueOf(chunkNo)
+            );
+
+            msg.send();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public String getBackupDir() {
         return BACKUP_DIR;

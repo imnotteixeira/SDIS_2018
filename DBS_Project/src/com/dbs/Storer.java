@@ -23,8 +23,7 @@ public class Storer {
     private void sendStoredMsg(PutchunkMessage receivedPUTCHUNK){
         StoredMessage msg = new StoredMessage(receivedPUTCHUNK.getVersion(), Peer.PEER_ID, receivedPUTCHUNK.getFileId(), receivedPUTCHUNK.getChunkNo());
 
-        msg.send(PeerController.getInstance().getConnectionInfo().getControlChannelHostname(),
-                PeerController.getInstance().getConnectionInfo().getControlPort());
+        msg.send();
 
     }
 

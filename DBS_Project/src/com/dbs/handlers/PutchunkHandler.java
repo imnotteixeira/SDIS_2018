@@ -62,9 +62,7 @@ public class PutchunkHandler {
         );
 
 
-        msg.send(PeerController.getInstance().getConnectionInfo().getBackupChannelHostname(),
-                PeerController.getInstance().getConnectionInfo().getBackupPort()
-        );
+        msg.send();
 
 
 

@@ -9,7 +9,7 @@ public class RemovedMessage extends PeerMessage {
     }
 
     @Override
-    public void send(String host, int port) {
+    public void send() {
 
     }
 }

@@ -1,10 +1,16 @@
 package com.dbs.filemanager;
 
+import com.dbs.utils.ByteToHex;
+
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -100,6 +106,26 @@ public class FileManager {
             }
         }
         return data;
+    }
+
+    public static String calcFileId(Path path) throws IOException {
+        BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
+
+        String fileId_raw = path.getFileName().toString() + attr.creationTime().toString();
+        String fileId = "";
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+
+            byte[] fileId_hash = digest.digest(fileId_raw.getBytes(StandardCharsets.UTF_8));
+
+            fileId = ByteToHex.convert(fileId_hash);
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        return fileId;
     }
 }
 

@@ -62,7 +62,11 @@ public class ChunkMessage extends PeerMessage {
     }
 
     @Override
-    public void send(String hostname, int port) {
+    public void send() {
+
+        String hostname = PeerController.connectionInfo.getRecoveryChannelHostname();
+        int port = PeerController.connectionInfo.getRecoveryPort();
+
         final byte[] msg = getByteMsg();
 
         try {
