@@ -25,7 +25,7 @@ public class PeerRemoteObject implements IPeerInterface {
     @Override
     public void recover(String filePath) throws RemoteException {
 
-        peer.getchunk(filePath);
+        peer.recover(filePath);
 
     }
 }

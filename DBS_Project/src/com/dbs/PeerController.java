@@ -6,6 +6,7 @@ import com.dbs.listeners.BackupListener;
 import com.dbs.listeners.ControlListener;
 import com.dbs.listeners.Listener;
 import com.dbs.listeners.RecoveryListener;
+import com.dbs.messages.ChunkMessage;
 import com.dbs.messages.GetchunkMessage;
 import com.dbs.utils.ByteToHex;
 import com.dbs.utils.Logger;
@@ -306,25 +307,47 @@ public class PeerController {
         return chunkInfo.peers.size() >= chunkInfo.desiredReplication;
     }
 
-    public void getchunk(String filePath) {
+    public void recover(String filePath) {
         try {
             String fileId = FileManager.calcFileId(Paths.get(filePath));
-
-
-            GetchunkMessage msg = new GetchunkMessage(
-                    Peer.VERSION.getBytes(),
-                    Peer.PEER_ID,
-                    fileId,
-                    String.valueOf(chunkNo)
-            );
-
-            msg.send();
-
+            getchunk(fileId, 0);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    public void getchunk(String fileId, int chunkNo) {
+        GetchunkMessage msg = new GetchunkMessage(
+                Peer.VERSION.getBytes(),
+                Peer.PEER_ID,
+                fileId,
+                String.valueOf(chunkNo)
+        );
+
+        tasks.put(new TaskLogKey(fileId, chunkNo, TaskType.CHUNK), new ChunkInfo());
+
+        msg.send();
+    }
+
+    public void processReceivedChunk(ChunkMessage msg) {
+
+        TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.CHUNK);
+
+        if(tasks.containsKey(key)){
+
+            tasks.remove(key);
+
+            Logger.log("Received CHUNK for file " + msg.getFileId() + " with number " + msg.getChunkNo());
+
+            //Append to output file here !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! !!!!!    !!!!!
+
+            if(msg.getBody().length == CHUNK_SIZE){
+                getchunk(msg.getFileId(), Integer.parseInt(msg.getChunkNo()) + 1);
+            }
+
+        }
+        //was not waiting for this chunk
+    }
 
     public String getBackupDir() {
         return BACKUP_DIR;

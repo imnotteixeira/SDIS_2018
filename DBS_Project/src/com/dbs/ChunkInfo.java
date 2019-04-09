@@ -18,6 +18,8 @@ public class ChunkInfo {
         this.data = data;
     }
 
+    public ChunkInfo() {}
+
     public HashSet<Integer> getPeers() {
         return peers;
     }

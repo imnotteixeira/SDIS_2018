@@ -15,6 +15,8 @@ public class Client {
 
             stub.backup("./test.txt",3);
 
+            stub.recover("./test.txt");
+
         } catch (RemoteException e) {
             e.printStackTrace();
         } catch (NotBoundException e) {

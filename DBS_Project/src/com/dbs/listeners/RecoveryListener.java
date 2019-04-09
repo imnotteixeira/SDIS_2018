@@ -4,6 +4,7 @@ import com.dbs.*;
 import com.dbs.messages.ChunkMessage;
 import com.dbs.utils.Logger;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,6 +31,8 @@ public class RecoveryListener extends Listener {
                 PeerController.getInstance().getTaskFutures().get(key).cancel(true);
                 PeerController.getInstance().getTaskFutures().remove(key);
             }
+
+            PeerController.getInstance().processReceivedChunk(msg);
 
         } catch(IllegalStateException e) {
             //No match found - invalid msg format

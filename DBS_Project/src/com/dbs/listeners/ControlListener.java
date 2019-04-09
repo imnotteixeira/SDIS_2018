@@ -42,9 +42,6 @@ public class ControlListener extends Listener {
             TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.CHUNK);
 
 
-
-
-
             int randomWaitTime = (int) (Math.random() * 400);
 
             Logger.log("Waiting " + randomWaitTime + " ms before trying to send CHUNK!");
