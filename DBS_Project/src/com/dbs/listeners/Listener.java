@@ -8,8 +8,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public abstract class Listener {
 
-    public static final int BUF_SIZE = 65622;
-
     Communicator communicator;
     ScheduledExecutorService threadPool;
 

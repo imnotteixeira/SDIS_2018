@@ -22,15 +22,21 @@ abstract public class PeerMessage {
         this.fileId = fileId;
     }
 
-    public static String getSenderId(byte[] src) throws IllegalStateException {
+    private static String getMsgNthField(byte[] src, int n) {
         Pattern r = Pattern.compile("(\\w+)\\s+(\\d\\.\\d)\\s+(\\d+)\\s+(\\w+)\\s+(\\d{1,6})\\s+");
 
         Matcher m = r.matcher(new String(src, 0, src.length));
 
         m.find();
+        return m.group(n);
+    }
 
+    public static String getSenderId(byte[] src) throws IllegalStateException {
+        return getMsgNthField(src, 3);
+    }
 
-        return m.group(3);
+    public static String getMsgProtocolVersion(byte[] src){
+        return getMsgNthField(src, 2);
     }
 
     @Override

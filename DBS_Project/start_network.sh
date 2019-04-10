@@ -17,7 +17,7 @@ then
     MDR=230.0.0.0:8767
 fi
 
-if [[ ${ARGC} -eq 4 ]]
+if [[ ${ARGC} -eq 5 ]]
 then
     NUM_PEERS=$1
     MC=$2

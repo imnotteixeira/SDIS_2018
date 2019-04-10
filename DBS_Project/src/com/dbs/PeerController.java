@@ -13,6 +13,7 @@ import com.dbs.utils.ByteToHex;
 import com.dbs.utils.Logger;
 import com.dbs.utils.NetworkAddress;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,6 +38,7 @@ import java.util.concurrent.*;
 
 public class PeerController {
 
+    public static final HashSet<String> compatibleProtocolVersions = new HashSet<>(Arrays.asList("1.0"));
     public final int CHUNK_SIZE = (int) 64e3;
 //    public final int CHUNK_SIZE = 5;
     private String rmi_name;

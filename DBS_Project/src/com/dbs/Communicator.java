@@ -11,6 +11,8 @@ import java.net.InetAddress;
 import java.util.Arrays;
 
 public class Communicator {
+
+    private static final int BUF_SIZE = 65622;
     private DatagramSocket socket;
 
     public Communicator(DatagramSocket socket) {
@@ -28,20 +30,21 @@ public class Communicator {
     }
 
     public DatagramPacket receive() throws IOException{
-        byte[] buf = new byte[Listener.BUF_SIZE];
+        byte[] buf = new byte[BUF_SIZE];
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
         while(true) {
             socket.receive(packet);
 
-            String senderId = PeerMessage.getSenderId(Arrays.copyOf(packet.getData(), packet.getLength()));
+            byte[] msgSrc = Arrays.copyOf(packet.getData(), packet.getLength());
 
-            if(!senderId.equals(Peer.PEER_ID)) {
-                break;
+            String senderId = PeerMessage.getSenderId(msgSrc);
+
+            String version = PeerMessage.getMsgProtocolVersion(msgSrc);
+
+            if(!senderId.equals(Peer.PEER_ID) && PeerController.compatibleProtocolVersions.contains(version)) {
+                return packet;
             }
         }
-
-
-        return packet;
     }
 }
