@@ -1,6 +1,8 @@
 package com.dbs.listeners;
 
 import com.dbs.*;
+import com.dbs.Database.ChunkInfo;
+import com.dbs.Database.ChunkInfoStorer;
 import com.dbs.filemanager.FileManager;
 import com.dbs.messages.*;
 import com.dbs.utils.Logger;
@@ -77,11 +79,13 @@ public class ControlListener extends Listener {
 
             TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.STORE);
 
+            //PeerController.getInstance().getTasks().get(key).addPeer(msg.getSenderId());
 
-            PeerController.getInstance().getTasks().get(key).addPeer(msg.getSenderId());
+            ChunkInfo chunkStatus = ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo()).addPeer(msg.getSenderId());
+
             TaskLogKey futureKey = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.PUTCHUNK);
-            if(PeerController.getInstance().replicationDegreeReached(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.STORE)) {
 
+            if(chunkStatus.isReplicationReached()) {
                 PeerController.getInstance().getTaskFutures().get(futureKey).cancel(true);
                 PeerController.getInstance().getTaskFutures().remove(futureKey);
             }

@@ -1,5 +1,6 @@
 package com.dbs.handlers;
 
+import com.dbs.Database.ChunkInfoStorer;
 import com.dbs.PeerController;
 import com.dbs.TaskLogKey;
 import com.dbs.TaskType;
@@ -32,7 +33,7 @@ public class PutchunkHandler {
 
     public void send() {
         if(nRetries > MAX_RETRIES) {
-            if(!PeerController.getInstance().replicationDegreeReached(fileId, chunkNo, TaskType.STORE)) {
+            if(!ChunkInfoStorer.getInstance().getChunkInfo(fileId, chunkNo).isReplicationReached()) {
                 Logger.log("Replication Degree was not reached. " +
                         "Please send information to remove backup from accepted Peers");
             }

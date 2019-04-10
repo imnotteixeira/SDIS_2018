@@ -1,5 +1,7 @@
 package com.dbs;
 
+import com.dbs.Database.ChunkInfo;
+import com.dbs.Database.ChunkInfoStorer;
 import com.dbs.filemanager.FileManager;
 import com.dbs.handlers.DeleteHandler;
 import com.dbs.handlers.GetchunkHandler;
@@ -8,30 +10,21 @@ import com.dbs.listeners.BackupListener;
 import com.dbs.listeners.ControlListener;
 import com.dbs.listeners.Listener;
 import com.dbs.listeners.RecoveryListener;
-import com.dbs.messages.ChunkMessage;
-import com.dbs.messages.GetchunkMessage;
-import com.dbs.utils.ByteToHex;
 import com.dbs.utils.Logger;
 import com.dbs.utils.NetworkAddress;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -298,9 +291,11 @@ public class PeerController {
 
     private void putchunk(String fileId, byte[] chunk, int chunkNo, int replicationDegree) {
 
-        TaskLogKey key = new TaskLogKey(fileId, chunkNo, TaskType.STORE);
-        ChunkInfo value = new ChunkInfo(new HashSet<>(), replicationDegree);
-        PeerController.getInstance().getTasks().put(key, value);
+        //TaskLogKey key = new TaskLogKey(fileId, chunkNo, TaskType.STORE);
+        //ChunkInfo value = new ChunkInfo(new HashSet<>(), replicationDegree);
+        //PeerController.getInstance().getTasks().put(key, value);
+
+        ChunkInfoStorer.getInstance().getChunkInfo(fileId, chunkNo).setDesiredReplicationDegree(replicationDegree);
 
         PutchunkHandler handler = new PutchunkHandler(fileId, chunkNo, replicationDegree, chunk);
         handler.send();
@@ -311,13 +306,6 @@ public class PeerController {
         GetchunkHandler handler = new GetchunkHandler(filePath);
         getchunkHandlers.put(handler.getFileId(), handler);
         handler.run();
-    }
-
-    public boolean replicationDegreeReached(String fileId, int chunkNo, TaskType taskType) {
-        TaskLogKey key = new TaskLogKey(fileId, chunkNo, taskType);
-        ChunkInfo chunkInfo = this.tasks.get(key);
-
-        return chunkInfo.peers.size() >= chunkInfo.desiredReplication;
     }
 
     public void delete(String filePath) {

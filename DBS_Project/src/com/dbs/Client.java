@@ -16,9 +16,9 @@ public class Client {
 
             stub.backup("./8ktest.jpg",3);
 
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.SECONDS.sleep(10);
 
-            stub.backup("./testfile.txt",3);
+            stub.recover("./8ktest.jpg");
 
             TimeUnit.SECONDS.sleep(5);
 
