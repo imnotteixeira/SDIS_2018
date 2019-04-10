@@ -105,6 +105,15 @@ public class ControlListener extends Listener {
             return;
         }
 
+        if(Peer.VERSION.equals("1.0")) {
+            processBaseVersionRecovery(key, chunkData);
+        } else if(Peer.VERSION.equals("1.1")) {
+            processImprovedVersionRecovery(key, chunkData);
+        }
+
+    }
+
+    private void processBaseVersionRecovery(TaskLogKey key, byte[] chunkData) {
         ChunkMessage msg = new ChunkMessage(
                 Peer.VERSION.getBytes(),
                 Peer.PEER_ID,
@@ -116,9 +125,19 @@ public class ControlListener extends Listener {
         msg.send();
 
         Logger.log("Sent CHUNK message for file: " + key.fileId);
-
     }
 
+    private void processImprovedVersionRecovery(TaskLogKey key, byte[] chunkData) {
+        //open tcp socket
+        //do not forget so_timeout
+
+        //send msg to share tcp socket
+
+        //wait for response (socket.accept?? prolly not (check docs)
+
+        //when connection, send chunk data
+
+    }
 
     private void processDeleteMsg(DatagramPacket packet) {
 

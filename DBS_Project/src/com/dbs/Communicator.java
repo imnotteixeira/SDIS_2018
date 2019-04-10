@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 public class Communicator {
 
-    private static final int BUF_SIZE = 65622;
+    public static final int BUF_SIZE = 65622;
     private DatagramSocket socket;
 
     public Communicator(DatagramSocket socket) {
