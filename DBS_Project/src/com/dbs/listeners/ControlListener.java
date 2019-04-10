@@ -105,6 +105,8 @@ public class ControlListener extends Listener {
             return;
         }
 
+        System.out.println("---- CHUNK DATA SIZE: " + chunkData.length);
+
         ChunkMessage msg = new ChunkMessage(
                 Peer.VERSION.getBytes(),
                 Peer.PEER_ID,

@@ -100,7 +100,7 @@ public class FileManager {
             throw new FileNotFoundException();
         } else {
             try {
-                data = new String(Files.readAllBytes(path)).getBytes();
+                data = Files.readAllBytes(path);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -126,6 +126,37 @@ public class FileManager {
         }
 
         return fileId;
+    }
+
+
+
+    public static void appendChunkToFile(Path filePath, byte[] body){
+        try {
+            OutputStream out = new BufferedOutputStream(
+                    Files.newOutputStream(
+                            filePath,
+                            StandardOpenOption.WRITE,
+                            StandardOpenOption.APPEND
+                    )
+            );
+
+            out.write(body, 0, body.length);
+            out.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void emptyFileIfExists(Path filePath){
+        try {
+            BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(filePath));
+            out.write(new byte[0]);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }
 

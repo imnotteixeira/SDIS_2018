@@ -2,6 +2,7 @@ package com.dbs;
 
 import com.dbs.listeners.Listener;
 import com.dbs.messages.PeerMessage;
+import com.dbs.utils.Logger;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -32,7 +33,9 @@ public class Communicator {
 
         while(true) {
             socket.receive(packet);
+
             String senderId = PeerMessage.getSenderId(Arrays.copyOf(packet.getData(), packet.getLength()));
+
             if(!senderId.equals(Peer.PEER_ID)) {
                 break;
             }

@@ -1,6 +1,7 @@
 package com.dbs;
 
 import com.dbs.filemanager.FileManager;
+import com.dbs.handlers.GetchunkHandler;
 import com.dbs.handlers.PutchunkHandler;
 import com.dbs.listeners.BackupListener;
 import com.dbs.listeners.ControlListener;
@@ -30,12 +31,13 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.*;
 
 public class PeerController {
 
-    private final int CHUNK_SIZE = (int) 64e3;
+    public final int CHUNK_SIZE = (int) 64e3;
 //    private final int CHUNK_SIZE = 5;
     private String rmi_name;
     public static PeerConnectionInfo connectionInfo;
@@ -46,6 +48,8 @@ public class PeerController {
 
     private ConcurrentHashMap<TaskLogKey, ChunkInfo> tasks = new ConcurrentHashMap<>();
     private ConcurrentHashMap<TaskLogKey, ScheduledFuture> taskFutures = new ConcurrentHashMap<>();
+
+    private HashMap<String, GetchunkHandler> getchunkHandlers = new HashMap<>();
 
     private ScheduledExecutorService threadPool;
 
@@ -300,53 +304,17 @@ public class PeerController {
 
     }
 
+    public void recover(String filePath) {
+        GetchunkHandler handler = new GetchunkHandler(filePath);
+        getchunkHandlers.put(handler.getFileId(), handler);
+        handler.run();
+    }
+
     public boolean replicationDegreeReached(String fileId, int chunkNo, TaskType taskType) {
         TaskLogKey key = new TaskLogKey(fileId, chunkNo, taskType);
         ChunkInfo chunkInfo = this.tasks.get(key);
 
         return chunkInfo.peers.size() >= chunkInfo.desiredReplication;
-    }
-
-    public void recover(String filePath) {
-        try {
-            String fileId = FileManager.calcFileId(Paths.get(filePath));
-            getchunk(fileId, 0);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void getchunk(String fileId, int chunkNo) {
-        GetchunkMessage msg = new GetchunkMessage(
-                Peer.VERSION.getBytes(),
-                Peer.PEER_ID,
-                fileId,
-                String.valueOf(chunkNo)
-        );
-
-        tasks.put(new TaskLogKey(fileId, chunkNo, TaskType.CHUNK), new ChunkInfo());
-
-        msg.send();
-    }
-
-    public void processReceivedChunk(ChunkMessage msg) {
-
-        TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.CHUNK);
-
-        if(tasks.containsKey(key)){
-
-            tasks.remove(key);
-
-            Logger.log("Received CHUNK for file " + msg.getFileId() + " with number " + msg.getChunkNo());
-
-            //Append to output file here !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! !!!!!    !!!!!
-
-            if(msg.getBody().length == CHUNK_SIZE){
-                getchunk(msg.getFileId(), Integer.parseInt(msg.getChunkNo()) + 1);
-            }
-
-        }
-        //was not waiting for this chunk
     }
 
     public String getBackupDir() {
@@ -367,5 +335,13 @@ public class PeerController {
 
     public ConcurrentHashMap<TaskLogKey, ScheduledFuture> getTaskFutures() {
         return taskFutures;
+    }
+
+    public GetchunkHandler getChunkHandlerForFile(String fileId) {
+        return getchunkHandlers.get(fileId);
+    }
+
+    public void removeGetchunkHandler(String fileId) {
+        getchunkHandlers.remove(fileId);
     }
 }
