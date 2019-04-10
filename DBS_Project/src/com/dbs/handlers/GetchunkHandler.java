@@ -25,7 +25,9 @@ public class GetchunkHandler {
     private boolean completedTransfer = false;
 
     public GetchunkHandler(String filePath) {
-        this.outputFilePath = Paths.get(filePath + ".recovered");
+        Path outputPath = Paths.get(filePath);
+        this.outputFilePath = Paths.get(outputPath.getParent().toString(), "recovered_" + outputPath.getFileName().toString());
+
         FileManager.emptyFileIfExists(outputFilePath);
         try {
             fileId = FileManager.calcFileId(Paths.get(filePath));
