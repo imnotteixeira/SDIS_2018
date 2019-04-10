@@ -1,6 +1,8 @@
 package com.dbs.messages;
 
 
+import com.dbs.utils.Logger;
+
 import java.net.MulticastSocket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,12 +25,18 @@ abstract public class PeerMessage {
     }
 
     private static String getMsgNthField(byte[] src, int n) {
-        Pattern r = Pattern.compile("(\\w+)\\s+(\\d\\.\\d)\\s+(\\d+)\\s+(\\w+)\\s+(\\d{1,6})\\s+");
 
-        Matcher m = r.matcher(new String(src, 0, src.length));
+        Pattern r = Pattern.compile("^(\\w+)\\s+(\\d\\.\\d)\\s+(\\d+)\\s+(.+)\\s+");
+
+        String srcStr = new String(src, 0, src.length);
+
+        Matcher m = r.matcher(srcStr);
 
         m.find();
-        return m.group(n);
+
+        String result = m.group(n);
+
+        return result;
     }
 
     public static String getSenderId(byte[] src) throws IllegalStateException {

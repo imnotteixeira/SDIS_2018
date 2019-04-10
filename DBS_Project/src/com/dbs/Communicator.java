@@ -25,8 +25,6 @@ public class Communicator {
                 InetAddress.getByName(hostname), port);
 
         socket.send(packet);
-
-
     }
 
     public DatagramPacket receive() throws IOException{
@@ -34,6 +32,7 @@ public class Communicator {
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
         while(true) {
+
             socket.receive(packet);
 
             byte[] msgSrc = Arrays.copyOf(packet.getData(), packet.getLength());

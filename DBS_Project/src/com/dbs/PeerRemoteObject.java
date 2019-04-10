@@ -28,4 +28,9 @@ public class PeerRemoteObject implements IPeerInterface {
         peer.recover(filePath);
 
     }
+
+    @Override
+    public void delete(String filePath) throws RemoteException {
+        peer.delete(filePath);
+    }
 }

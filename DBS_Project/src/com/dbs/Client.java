@@ -16,9 +16,13 @@ public class Client {
 
             stub.backup("./8ktest.jpg",3);
 
-            TimeUnit.SECONDS.sleep(3);
+            TimeUnit.SECONDS.sleep(1);
 
-            stub.recover("./8ktest.jpg");
+            stub.backup("./testfile.txt",3);
+
+            TimeUnit.SECONDS.sleep(5);
+
+            stub.delete("./8ktest.jpg");
 
         } catch (RemoteException e) {
             e.printStackTrace();

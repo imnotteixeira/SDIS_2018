@@ -1,6 +1,7 @@
 package com.dbs;
 
 import com.dbs.filemanager.FileManager;
+import com.dbs.handlers.DeleteHandler;
 import com.dbs.handlers.GetchunkHandler;
 import com.dbs.handlers.PutchunkHandler;
 import com.dbs.listeners.BackupListener;
@@ -317,6 +318,11 @@ public class PeerController {
         ChunkInfo chunkInfo = this.tasks.get(key);
 
         return chunkInfo.peers.size() >= chunkInfo.desiredReplication;
+    }
+
+    public void delete(String filePath) {
+        DeleteHandler handler = new DeleteHandler(filePath);
+        handler.run();
     }
 
     public String getBackupDir() {

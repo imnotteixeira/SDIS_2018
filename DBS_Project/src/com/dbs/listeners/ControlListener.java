@@ -2,12 +2,10 @@ package com.dbs.listeners;
 
 import com.dbs.*;
 import com.dbs.filemanager.FileManager;
-import com.dbs.messages.ChunkMessage;
-import com.dbs.messages.GetchunkMessage;
-import com.dbs.messages.PeerMessage;
-import com.dbs.messages.StoredMessage;
+import com.dbs.messages.*;
 import com.dbs.utils.Logger;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.DatagramPacket;
 import java.util.concurrent.ScheduledFuture;
@@ -24,13 +22,15 @@ public class ControlListener extends Listener {
     protected void processPacket(DatagramPacket packet) {
         String msgType = PeerMessage.getMessageType(new String(packet.getData(), 0, packet.getLength()));
 
-
         switch (msgType) {
             case "STORED":
                 processStoredMsg(packet);
                 break;
             case "GETCHUNK":
                 processGetchunkMsg(packet);
+                break;
+            case "DELETE":
+                processDeleteMsg(packet);
                 break;
         }
     }
@@ -105,8 +105,6 @@ public class ControlListener extends Listener {
             return;
         }
 
-        System.out.println("---- CHUNK DATA SIZE: " + chunkData.length);
-
         ChunkMessage msg = new ChunkMessage(
                 Peer.VERSION.getBytes(),
                 Peer.PEER_ID,
@@ -122,9 +120,17 @@ public class ControlListener extends Listener {
     }
 
 
+    private void processDeleteMsg(DatagramPacket packet) {
+
+        DeleteMessage msg = DeleteMessage.fromString(packet.getData());
+
+        if(FileManager.deleteBackupFolder(msg.getFileId())){
+            Logger.log("Successfully deleted file");
+        }else{
+            Logger.log("No chunks to delete");
+        }
 
 
-
-
+    }
 
 }

@@ -71,7 +71,6 @@ public class ChunkMessage extends PeerMessage {
         final byte[] msg = getByteMsg();
 
         try {
-            Logger.log("-------- Sending chunk message with size " + msg.length);
             PeerController.getInstance().getConnectionInfo().getRecoveryChannelCommunicator().send(msg, hostname, port);
 
         } catch (IOException e) {

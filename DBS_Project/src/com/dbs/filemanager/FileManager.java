@@ -1,6 +1,8 @@
 package com.dbs.filemanager;
 
+import com.dbs.Peer;
 import com.dbs.utils.ByteToHex;
+import com.dbs.utils.Logger;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +26,7 @@ public class FileManager {
         for (int i = 0; i < chunks.size(); i++) {
             Path path = Paths.get(dir, fileId ,String.valueOf(i));
             if(Files.notExists(path.getParent())) {
-                try {
+                try{
                     Files.createDirectories(path.getParent());
 
                 } catch (IOException e) {
@@ -156,7 +158,24 @@ public class FileManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
+
+
+    public static boolean deleteBackupFolder(String fileId){
+        File directory = Paths.get("peer_backup_" + Peer.PEER_ID, fileId).toFile();
+
+        if(!directory.exists()) {
+            return false;
+        }
+
+        for(File chunkFile : directory.listFiles()) {
+            chunkFile.delete();
+        }
+
+        directory.delete();
+
+        return true;
+    }
+
 }
 
