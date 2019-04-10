@@ -1,5 +1,6 @@
 package com.dbs.messages;
 
+import com.dbs.Communicator;
 import com.dbs.PeerController;
 import com.dbs.utils.Logger;
 
@@ -9,18 +10,12 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ChunkMessage extends PeerMessage {
-    private final String chunkNo;
+public class ChunkMessage extends ChunkDependentMessage {
     private final byte[] body;
-    private int headerSize;
 
     public ChunkMessage(byte[] version, String senderId, String fileId, String chunkNo, byte[] body) {
-        super("CHUNK", version, senderId, fileId);
-        this.chunkNo = chunkNo;
+        super("CHUNK", version, senderId, fileId, chunkNo);
         this.body = body;
-
-
-        this.headerSize = this.toString().getBytes().length + PeerMessage.CRLF.getBytes().length * 2;
     }
 
     public static ChunkMessage fromString(byte[] src) throws IllegalStateException {
@@ -48,12 +43,6 @@ public class ChunkMessage extends PeerMessage {
         return new ChunkMessage(version, senderId, fileId, chunkNo, body);
     }
 
-    @Override
-    public String toString() {
-        return super.toString() + " "
-                + chunkNo + " ";
-    }
-
     public byte[] getByteMsg() {
         return ByteBuffer.allocate(this.headerSize + body.length)
                 .put(toString().getBytes())
@@ -62,25 +51,15 @@ public class ChunkMessage extends PeerMessage {
                 .put(body).array();
     }
 
+
     @Override
-    public void send() {
+    public String getHostname(){ return PeerController.connectionInfo.getRecoveryChannelHostname(); }
 
-        String hostname = PeerController.connectionInfo.getRecoveryChannelHostname();
-        int port = PeerController.connectionInfo.getRecoveryPort();
+    @Override
+    public int getPort(){ return PeerController.connectionInfo.getRecoveryPort(); }
 
-        final byte[] msg = getByteMsg();
-
-        try {
-            PeerController.getInstance().getConnectionInfo().getRecoveryChannelCommunicator().send(msg, hostname, port);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public String getChunkNo() {
-        return chunkNo;
-    }
+    @Override
+    protected Communicator getCommunicator() { return PeerController.connectionInfo.getRecoveryChannelCommunicator(); }
 
     public byte[] getBody() {
         return body;

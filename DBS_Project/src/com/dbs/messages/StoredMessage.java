@@ -1,5 +1,6 @@
 package com.dbs.messages;
 
+import com.dbs.Communicator;
 import com.dbs.PeerController;
 
 import java.io.IOException;
@@ -7,43 +8,21 @@ import java.nio.ByteBuffer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class StoredMessage extends PeerMessage {
-    private final String chunkNo;
-    private int headerSize;
+    public class StoredMessage extends ChunkDependentMessage {
 
     public StoredMessage(byte[] version, String senderId, String fileId, String chunkNo) {
-        super("STORED", version, senderId, fileId);
-        this.chunkNo = chunkNo;
-
-        this.headerSize = this.toString().getBytes().length + PeerMessage.CRLF.getBytes().length * 2;
+        super("STORED", version, senderId, fileId, chunkNo);
     }
 
     @Override
-    public String toString() {
-        return super.toString() + " "
-                + chunkNo + " ";
-    }
-
-    public byte[] getByteMsg() {
-        return ByteBuffer.allocate(this.headerSize)
-                .put(toString().getBytes())
-                .put(PeerMessage.CRLF.getBytes())
-                .put(PeerMessage.CRLF.getBytes()).array();
-    }
+    protected String getHostname() {return PeerController.connectionInfo.getControlChannelHostname();}
 
     @Override
-    public void send() {
-        String hostname = PeerController.connectionInfo.getControlChannelHostname();
-        int port = PeerController.connectionInfo.getControlPort();
+    protected int getPort() {return PeerController.connectionInfo.getControlPort();}
 
-        final byte[] msg = getByteMsg();
+    @Override
+    protected Communicator getCommunicator() { return PeerController.connectionInfo.getControlChannelCommunicator(); }
 
-        try {
-            PeerController.getInstance().getConnectionInfo().getBackupChannelCommunicator().send(msg, hostname, port);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     public static StoredMessage fromString(byte[] src) throws IllegalStateException {
 
@@ -62,9 +41,5 @@ public class StoredMessage extends PeerMessage {
 
 
         return new StoredMessage(version, senderId, fileId, chunkNo);
-    }
-
-    public String getChunkNo() {
-        return chunkNo;
     }
 }

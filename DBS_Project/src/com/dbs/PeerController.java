@@ -6,6 +6,7 @@ import com.dbs.filemanager.FileManager;
 import com.dbs.handlers.DeleteHandler;
 import com.dbs.handlers.GetchunkHandler;
 import com.dbs.handlers.PutchunkHandler;
+import com.dbs.handlers.RemovedHandler;
 import com.dbs.listeners.BackupListener;
 import com.dbs.listeners.ControlListener;
 import com.dbs.listeners.Listener;
@@ -306,6 +307,11 @@ public class PeerController {
     public void delete(String filePath) {
         DeleteHandler handler = new DeleteHandler(filePath);
         handler.run();
+    }
+
+    public void removed(String filePath, int chunkNo) {
+        RemovedHandler handler = new RemovedHandler(filePath);
+        handler.run(chunkNo);
     }
 
     public ConcurrentHashMap<TaskLogKey, ChunkInfo> getTasks() {

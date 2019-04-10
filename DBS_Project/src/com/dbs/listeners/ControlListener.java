@@ -4,9 +4,12 @@ import com.dbs.*;
 import com.dbs.Database.ChunkInfo;
 import com.dbs.Database.ChunkInfoStorer;
 import com.dbs.filemanager.FileManager;
+import com.dbs.handlers.PutchunkHandler;
 import com.dbs.messages.*;
 import com.dbs.utils.Logger;
+import javafx.concurrent.Task;
 
+import javax.xml.crypto.Data;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.DatagramPacket;
@@ -34,15 +37,15 @@ public class ControlListener extends Listener {
             case "DELETE":
                 processDeleteMsg(packet);
                 break;
+            case "REMOVED":
+                processRemovedMsg(packet);
+                break;
         }
     }
 
     private void processGetchunkMsg(DatagramPacket packet) {
         try {
             GetchunkMessage msg = GetchunkMessage.fromString(new String(packet.getData(), 0, packet.getLength()).getBytes());
-
-            TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.CHUNK);
-
 
             int randomWaitTime = (int) (Math.random() * 400);
 
@@ -51,19 +54,9 @@ public class ControlListener extends Listener {
             TaskLogKey futureKey = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.CHUNK);
 
             // Send CHUNK in <randomTime> ms, if not canceled before
-            ScheduledFuture future = threadPool.schedule(()->this.processRecovery(key), randomWaitTime, TimeUnit.MILLISECONDS);
+            ScheduledFuture future = threadPool.schedule(()->this.processRecovery(futureKey), randomWaitTime, TimeUnit.MILLISECONDS);
 
             PeerController.getInstance().getTaskFutures().put(futureKey, future);
-
-
-
-
-//            TaskLogKey futureKey = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.PUTCHUNK);
-//            if(PeerController.getInstance().replicationDegreeReached(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.CHUNK)) {
-//
-//                PeerController.getInstance().getTaskFutures().get(futureKey).cancel(true);
-//                PeerController.getInstance().getTaskFutures().remove(futureKey);
-//            }
 
         } catch(IllegalStateException e) {
             //Invalid msg format
@@ -80,6 +73,13 @@ public class ControlListener extends Listener {
             ChunkInfo chunkStatus = ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo()).addPeer(msg.getSenderId());
 
             TaskLogKey futureKey = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.PUTCHUNK);
+
+            TaskLogKey futureKeyRemoved = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.REMOVED);
+
+            if(PeerController.getInstance().getTaskFutures().containsKey(futureKeyRemoved)){
+                PeerController.getInstance().getTaskFutures().get(futureKey).cancel(true);
+                PeerController.getInstance().getTaskFutures().remove(futureKey);
+            }
 
             if(chunkStatus.isReplicationReached()) {
                 PeerController.getInstance().getTaskFutures().get(futureKey).cancel(true);
@@ -129,8 +129,41 @@ public class ControlListener extends Listener {
         }else{
             Logger.log("No chunks to delete");
         }
+    }
 
+    private void processRemovedMsg(DatagramPacket packet){
 
+        RemovedMessage msg = RemovedMessage.fromString(packet.getData());
+
+        ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo())
+            .removePeer(msg.getSenderId());
+
+        try {
+            int randomWaitTime = (int) (Math.random() * 400);
+
+            Logger.log("Peer " + msg.getSenderId() + " has deleted a chunk. Going to wait " + randomWaitTime + "s and send a putchunk");
+
+            // Send CHUNK in <randomTime> ms, if not canceled beforef not canceled before
+
+            TaskLogKey futureKey = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.REMOVED);
+
+            ScheduledFuture future = threadPool.schedule(()->this.processRemovedChunk(futureKey), randomWaitTime, TimeUnit.MILLISECONDS);
+
+            PeerController.getInstance().getTaskFutures().put(futureKey, future);
+
+        } catch(IllegalStateException e) {
+            //Invalid msg format
+        }
+
+    }
+
+    private void processRemovedChunk(TaskLogKey key) {
+        try {
+            PutchunkHandler handler = new PutchunkHandler(key.fileId, key.chunkNo, 1, FileManager.getChunk(key.fileId, key.chunkNo));
+            handler.send();
+        } catch (FileNotFoundException e) {
+            //this peer does not have this chunk and so cannot send it
+        }
     }
 
 }

@@ -16,9 +16,9 @@ public class Client {
 
             stub.backup("./8ktest.jpg",3);
 
-            TimeUnit.SECONDS.sleep(10);
+            TimeUnit.SECONDS.sleep(30);
 
-            stub.recover("./8ktest.jpg");
+            stub.removed("./8ktest.jpg", 3);
 
             //TimeUnit.SECONDS.sleep(5);
 

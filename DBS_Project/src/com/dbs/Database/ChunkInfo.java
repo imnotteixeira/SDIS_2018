@@ -10,16 +10,6 @@ public class ChunkInfo implements Serializable {
     private HashSet<Integer> peers = new HashSet<>();
     private int desiredReplication;
 
-    /*public ChunkInfo(HashSet<Integer> peers, int desiredReplication) {
-        this.peers = peers;
-        this.desiredReplication = desiredReplication;
-    }
-
-    public ChunkInfo(HashSet<Integer> peers, byte[] data) {
-        this.peers = peers;
-        this.data = data;
-    }*/
-
     private static void saveChunksInformation(){
         ChunkInfoStorer.getInstance().save();
     }
@@ -47,8 +37,13 @@ public class ChunkInfo implements Serializable {
     /// SETTERS - Each should call saveChunksInformation
 
     public ChunkInfo addPeer(String senderId) {
-
         this.peers.add(Integer.parseInt(senderId));
+        saveChunksInformation();
+        return this;
+    }
+
+    public ChunkInfo removePeer(String senderId) {
+        this.peers.remove(Integer.parseInt(senderId));
         saveChunksInformation();
         return this;
     }
