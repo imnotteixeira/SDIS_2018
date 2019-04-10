@@ -53,7 +53,7 @@ public class GetchunkHandler {
         PeerController.getInstance().getTaskFutures().put(key, future);
     }
 
-    public void sendGetchunk() {
+    public synchronized void sendGetchunk() {
 
         GetchunkMessage msg = new GetchunkMessage(
                 Peer.VERSION.getBytes(),
@@ -71,11 +71,13 @@ public class GetchunkHandler {
         }
     }
 
-    public void processReceivedChunk(ChunkMessage msg) {
+    public synchronized void processReceivedChunk(ChunkMessage msg) {
 
         if(chunkNo == Integer.parseInt(msg.getChunkNo())){
 
             PeerController.getInstance().getTaskFutures().get(key).cancel(true);
+
+            PeerController.getInstance().getTaskFutures().remove(key);
 
             nRetries = 0;
 
@@ -89,7 +91,7 @@ public class GetchunkHandler {
                 Logger.log("File " + fileId +  " recovered successfully!");
             } else {
                 chunkNo++;
-                sendGetchunk();
+                run();
             }
 
         }

@@ -38,7 +38,7 @@ import java.util.concurrent.*;
 public class PeerController {
 
     public final int CHUNK_SIZE = (int) 64e3;
-//    private final int CHUNK_SIZE = 5;
+//    public final int CHUNK_SIZE = 5;
     private String rmi_name;
     public static PeerConnectionInfo connectionInfo;
     private final String BACKUP_DIR;
