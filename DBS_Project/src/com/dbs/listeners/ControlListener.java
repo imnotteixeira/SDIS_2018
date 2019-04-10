@@ -77,10 +77,6 @@ public class ControlListener extends Listener {
         try {
             StoredMessage msg = StoredMessage.fromString(new String(packet.getData(), 0, packet.getLength()).getBytes());
 
-            TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.STORE);
-
-            //PeerController.getInstance().getTasks().get(key).addPeer(msg.getSenderId());
-
             ChunkInfo chunkStatus = ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo()).addPeer(msg.getSenderId());
 
             TaskLogKey futureKey = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.PUTCHUNK);
@@ -103,7 +99,7 @@ public class ControlListener extends Listener {
 
         byte[] chunkData;
         try {
-            chunkData = FileManager.getChunk(PeerController.getInstance().getBackupDir(), key.fileId, key.chunkNo);
+            chunkData = FileManager.getChunk(key.fileId, key.chunkNo);
         } catch (FileNotFoundException e) {
             //This Peer does not have the requested File Chunk
             return;

@@ -45,16 +45,15 @@ public class BackupListener extends Listener {
             //No match found - invalid msg format
         }
 
-
     }
 
     private void processStorage(PutchunkMessage msg) {
-
 
         ChunkInfo status = ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo());
 
 //        System.out.println("The current replication degree is " + status.getPeers().size() + ". The desired one is " + status.desiredReplication);
         if(!status.isReplicationReached()) {
+
 //            System.out.println("Processing PUTCHUNK Sender ID: "+ msg.getSenderId() + "| peer_id: " + Peer.PEER_ID);
 //            System.out.println("Sending STORED!");
             this.chunkStorer.store(msg);

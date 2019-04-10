@@ -1,12 +1,33 @@
 package com.dbs.Database;
 
+import com.dbs.Peer;
+import com.dbs.filemanager.FileManager;
+import com.dbs.utils.Logger;
+
+import java.io.*;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-public class ChunkInfoStorer {
+public class ChunkInfoStorer implements Serializable {
 
     private static ChunkInfoStorer instance = null;
+
+    public static ChunkInfoStorer loadFromFile(){
+        try {
+            ObjectInputStream i = new ObjectInputStream(new FileInputStream(new File(FileManager.PEER_DIR,"state.txt")));
+            // Write objects to file
+            ChunkInfoStorer.instance = (ChunkInfoStorer) i.readObject();
+
+            i.close();
+
+            return instance;
+        } catch (Exception e) {
+           Logger.log("Could not load state from file");
+        }
+
+        return getInstance();
+    }
 
     synchronized public static ChunkInfoStorer getInstance(){
         if(ChunkInfoStorer.instance == null){
@@ -15,8 +36,6 @@ public class ChunkInfoStorer {
 
         return ChunkInfoStorer.instance;
     }
-
-    //private ConcurrentHashMap<TaskLogKey, ChunkInfo> tasks = new ConcurrentHashMap<>();
 
     private ConcurrentHashMap<ChunkKey, ChunkInfo> chunkInfos = new ConcurrentHashMap<>();
 
@@ -38,15 +57,28 @@ public class ChunkInfoStorer {
     }
 
 
-    public void save() {
-        //SAVE INFO TO HARD DRIVE HERE
+    public static void save() {
+        ChunkInfoStorer object = ChunkInfoStorer.getInstance();
+
+        try {
+            ObjectOutputStream o = new ObjectOutputStream(new FileOutputStream(new File(FileManager.PEER_DIR,"state.txt")));
+            // Write objects to file
+            o.writeObject(object);
+
+            o.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
 
 
 
-class ChunkKey{
+class ChunkKey implements Serializable{
     public String fileId;
     public int chunkNo;
 

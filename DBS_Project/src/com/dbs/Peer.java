@@ -1,5 +1,8 @@
 package com.dbs;
 
+import com.dbs.Database.ChunkInfoStorer;
+import com.dbs.filemanager.FileManager;
+
 public class Peer {
 
     public static String PEER_ID;
@@ -24,6 +27,9 @@ public class Peer {
         MDR_ADDRESS = args[5];
 
         PeerController peerController = PeerController.getInstance();
+
+        FileManager.createPeerFileTree();
+        ChunkInfoStorer.loadFromFile();
 
         peerController.start();
 

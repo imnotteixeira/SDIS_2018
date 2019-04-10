@@ -7,7 +7,6 @@ import com.dbs.messages.GetchunkMessage;
 import com.dbs.utils.Logger;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -17,20 +16,18 @@ public class GetchunkHandler {
     private final static int[] DELAY_PER_ATTEMPT = {0, 1, 2, 4, 8};
     private static final int MAX_RETRIES = 4;
 
-    private Path outputFilePath;
     private String fileId;
+    private String fileName;
     private int chunkNo = 0;
     private TaskLogKey key;
     private int nRetries = 0;
     private boolean completedTransfer = false;
 
     public GetchunkHandler(String filePath) {
-        Path outputPath = Paths.get(filePath);
-        this.outputFilePath = Paths.get(outputPath.getParent().toString(), "recovered_" + outputPath.getFileName().toString());
-
-        FileManager.emptyFileIfExists(outputFilePath);
         try {
             fileId = FileManager.calcFileId(Paths.get(filePath));
+            fileName = filePath;
+            FileManager.resetRecoveredFileIfExists(filePath);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -83,7 +80,7 @@ public class GetchunkHandler {
 
             System.out.println("Received CHUNK number " + msg.getChunkNo());
 
-            FileManager.appendChunkToFile(outputFilePath, msg.getBody());
+            FileManager.appendChunkToFile(fileName, msg.getBody());
 
             if(msg.getBody().length < PeerController.getInstance().CHUNK_SIZE) {
                 PeerController.getInstance().removeGetchunkHandler(this.fileId);

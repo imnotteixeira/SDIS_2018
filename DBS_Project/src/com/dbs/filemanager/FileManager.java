@@ -1,6 +1,7 @@
 package com.dbs.filemanager;
 
 import com.dbs.Peer;
+import com.dbs.PeerController;
 import com.dbs.utils.ByteToHex;
 import com.dbs.utils.Logger;
 
@@ -18,6 +19,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FileManager {
+
+    public static String PEER_DIR = null;
+    public static String BACKUP_DIR = null;
+    public static String RESTORED_DIR = null;
 
     public void saveFile(String dir, String fileId, byte[] fileData, int chunkSize) {
 
@@ -37,19 +42,48 @@ public class FileManager {
         }
     }
 
-    public static void storeChunk(String dir, String fileId, String chunkNo, byte[] chunkBody) {
+    public static void storeChunk(String fileId, String chunkNo, byte[] chunkBody) {
 
+        Path chunkPath = Paths.get(BACKUP_DIR, fileId, "chk" + chunkNo);
 
-            Path path = Paths.get(dir, fileId, chunkNo);
-            if(Files.notExists(path.getParent())) {
-                try {
-                    Files.createDirectories(path.getParent());
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        if(Files.notExists(chunkPath)) {
+            try {
+                Files.createDirectories(chunkPath.getParent());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            writeChunk(path, chunkBody);
+        }
+
+        writeChunk(chunkPath, chunkBody);
+    }
+
+    public static void createPeerFileTree(){
+
+        if(FileManager.PEER_DIR == null){
+            FileManager.PEER_DIR = "peer_"+ Peer.PEER_ID;
+        }
+
+        Path backupPath = Paths.get(PEER_DIR, "backup");
+        BACKUP_DIR = backupPath.toString();
+
+        Path restoredPath = Paths.get(PEER_DIR, "restored");
+        RESTORED_DIR = restoredPath.toString();
+
+        if(Files.notExists(backupPath)) {
+            try {
+                Files.createDirectories(backupPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if(Files.notExists(restoredPath)) {
+            try {
+                Files.createDirectories(restoredPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -93,8 +127,8 @@ public class FileManager {
         return result;
     }
 
-    public static byte[] getChunk(String dir, String fileId, int chunkNo) throws FileNotFoundException {
-        Path path = Paths.get(dir, fileId , String.valueOf(chunkNo));
+    public static byte[] getChunk(String fileId, int chunkNo) throws FileNotFoundException {
+        Path path = Paths.get(BACKUP_DIR, fileId, "chk" + chunkNo);
 
         byte[] data = new byte[0];
 
@@ -132,11 +166,11 @@ public class FileManager {
 
 
 
-    public static void appendChunkToFile(Path filePath, byte[] body){
+    public static void appendChunkToFile(String fileName, byte[] body){
         try {
             OutputStream out = new BufferedOutputStream(
                     Files.newOutputStream(
-                            filePath,
+                            Paths.get(RESTORED_DIR, fileName),
                             StandardOpenOption.WRITE,
                             StandardOpenOption.APPEND
                     )
@@ -150,9 +184,9 @@ public class FileManager {
         }
     }
 
-    public static void emptyFileIfExists(Path filePath){
+    public static void resetRecoveredFileIfExists(String fileName){
         try {
-            BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(filePath));
+            BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(Paths.get(RESTORED_DIR, fileName)));
             out.write(new byte[0]);
             out.close();
         } catch (IOException e) {
@@ -162,7 +196,7 @@ public class FileManager {
 
 
     public static boolean deleteBackupFolder(String fileId){
-        File directory = Paths.get("peer_backup_" + Peer.PEER_ID, fileId).toFile();
+        File directory = Paths.get(BACKUP_DIR, fileId).toFile();
 
         if(!directory.exists()) {
             return false;

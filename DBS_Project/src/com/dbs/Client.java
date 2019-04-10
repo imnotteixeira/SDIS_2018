@@ -20,9 +20,9 @@ public class Client {
 
             stub.recover("./8ktest.jpg");
 
-            TimeUnit.SECONDS.sleep(5);
+            //TimeUnit.SECONDS.sleep(5);
 
-            stub.delete("./8ktest.jpg");
+            //stub.delete("./8ktest.jpg");
 
         } catch (RemoteException e) {
             e.printStackTrace();

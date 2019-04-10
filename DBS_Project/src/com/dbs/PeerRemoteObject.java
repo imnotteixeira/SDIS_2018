@@ -1,6 +1,8 @@
 package com.dbs;
 
 import com.dbs.filemanager.FileManager;
+
+import java.io.File;
 import java.rmi.RemoteException;
 
 public class PeerRemoteObject implements IPeerInterface {
@@ -12,7 +14,7 @@ public class PeerRemoteObject implements IPeerInterface {
     public PeerRemoteObject(PeerController peer, FileManager fm) {
         this.fm = fm;
         this.peer = peer;
-        this.dir = peer.getBackupDir();
+        this.dir = FileManager.BACKUP_DIR;
     }
 
     @Override

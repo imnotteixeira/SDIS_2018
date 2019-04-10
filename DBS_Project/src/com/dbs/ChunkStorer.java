@@ -13,7 +13,7 @@ public class ChunkStorer {
 
         if(Integer.parseInt(msg.getSenderId()) != PeerController.connectionInfo.getSenderId()) {
 
-            FileManager.storeChunk(PeerController.getInstance().getBackupDir(), msg.getFileId(), msg.getChunkNo(), msg.getBody());
+            FileManager.storeChunk(msg.getFileId(), msg.getChunkNo(), msg.getBody());
             sendStoredMsg(msg);
 
             //Storing the fact that this peer has the chunk, because it won't parse the incoming STORED message

@@ -37,7 +37,6 @@ public class PeerController {
 //    public final int CHUNK_SIZE = 5;
     private String rmi_name;
     public static PeerConnectionInfo connectionInfo;
-    private final String BACKUP_DIR;
 
     private Registry reg = null;
     private PeerRemoteObject peer_remote_object = null;
@@ -78,10 +77,6 @@ public class PeerController {
         NetworkAddress mc_address_addr = new NetworkAddress(mc_address);
         NetworkAddress mdb_address_addr = new NetworkAddress(mdb_address);
         NetworkAddress mdr_address_addr = new NetworkAddress(mdr_address);
-
-
-
-        this.BACKUP_DIR = "./peer_backup_"+ peer_id;
 
         connectionInfo = new PeerConnectionInfo(
                 Integer.valueOf(peer_id),
@@ -311,10 +306,6 @@ public class PeerController {
     public void delete(String filePath) {
         DeleteHandler handler = new DeleteHandler(filePath);
         handler.run();
-    }
-
-    public String getBackupDir() {
-        return BACKUP_DIR;
     }
 
     public ConcurrentHashMap<TaskLogKey, ChunkInfo> getTasks() {

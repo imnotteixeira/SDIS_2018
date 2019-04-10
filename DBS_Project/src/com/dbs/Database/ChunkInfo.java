@@ -2,9 +2,10 @@ package com.dbs.Database;
 
 import com.dbs.utils.Logger;
 
+import java.io.Serializable;
 import java.util.HashSet;
 
-public class ChunkInfo {
+public class ChunkInfo implements Serializable {
 
     private HashSet<Integer> peers = new HashSet<>();
     private int desiredReplication;
@@ -46,6 +47,7 @@ public class ChunkInfo {
     /// SETTERS - Each should call saveChunksInformation
 
     public ChunkInfo addPeer(String senderId) {
+
         this.peers.add(Integer.parseInt(senderId));
         saveChunksInformation();
         return this;
