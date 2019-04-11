@@ -85,4 +85,8 @@ public class TCPSocketChunkMessage extends PeerMessage {
     public int getPort() {
         return port;
     }
+
+    public String getChunkNo() {
+        return chunkNo;
+    }
 }

@@ -62,24 +62,14 @@ public class RecoveryListener extends Listener {
 
         TCPSocketChunkMessage msg = TCPSocketChunkMessage.fromString(Arrays.copyOf(packet.getData(), packet.getLength()));
 
-        String hostname = msg.getHostname();
-        int port = msg.getPort();
-
-        Socket clientSocket = null;
-        try {
-            clientSocket = new Socket(InetAddress.getByName(hostname), port);
-
-
-            ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-            byte[] chunkBody = (byte[]) in.readObject();
-
-
-            in.close();
-            clientSocket.close();
-
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+        TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.CHUNK);
+        //When receiving a CHUNK for a past GETCHUNK, cancel the CHUNK sending of this peer
+        if(PeerController.getInstance().getTaskFutures().containsKey(key)) {
+            PeerController.getInstance().getTaskFutures().get(key).cancel(true);
+            PeerController.getInstance().getTaskFutures().remove(key);
         }
+
+        PeerController.getInstance().getChunkHandlerForFile(msg.getFileId()).processReceivedChunk_TCP(msg);
 
 
 

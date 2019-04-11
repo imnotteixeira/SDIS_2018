@@ -14,7 +14,7 @@ public class Client {
 
             IPeerInterface stub = (IPeerInterface) reg.lookup("peer_1");
 
-            stub.backup("./8ktest.jpg",3);
+            stub.backup("./8ktest.jpg",2);
 
             TimeUnit.SECONDS.sleep(10);
 

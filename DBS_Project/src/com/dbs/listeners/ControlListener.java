@@ -6,15 +6,19 @@ import com.dbs.Database.ChunkInfoStorer;
 import com.dbs.filemanager.FileManager;
 import com.dbs.messages.*;
 import com.dbs.utils.Logger;
+import com.dbs.utils.NetworkAddress;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class ControlListener extends Listener {
 
+    private static final int TCP_TIMEOUT_MS = 15000;
 
     public ControlListener() {
         super(PeerController.getInstance().getConnectionInfo().getControlChannelCommunicator(), PeerController.getInstance().getThreadPool());
@@ -129,13 +133,48 @@ public class ControlListener extends Listener {
 
     private void processImprovedVersionRecovery(TaskLogKey key, byte[] chunkData) {
         //open tcp socket
-        //do not forget so_timeout
+        ServerSocket serverSocket;
+        try {
+            serverSocket = new ServerSocket(0);
+            serverSocket.setReuseAddress(true);
+            serverSocket.setSoTimeout(TCP_TIMEOUT_MS);
+
+        } catch (IOException e) {
+            Logger.log("Could not create TCP socket to send CHUNK");
+            return;
+        }
+
+        String hostname = NetworkAddress.getHostIp();
 
         //send msg to share tcp socket
+        TCPSocketChunkMessage msg = new TCPSocketChunkMessage(
+                Peer.PEER_ID,
+                key.fileId,
+                String.valueOf(key.chunkNo),
+                hostname,
+                serverSocket.getLocalPort()
+        );
 
-        //wait for response (socket.accept?? prolly not (check docs)
+        msg.send();
 
-        //when connection, send chunk data
+        //wait for response
+        try {
+            Socket clientSocket = serverSocket.accept();
+
+            //when connection, send chunk data
+            ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+            out.writeObject(chunkData);
+
+            out.close();
+            clientSocket.close();
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
 
     }
 

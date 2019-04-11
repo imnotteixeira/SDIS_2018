@@ -32,7 +32,7 @@ import java.util.concurrent.*;
 
 public class PeerController {
 
-    public static final HashSet<String> compatibleProtocolVersions = new HashSet<>(Arrays.asList("1.0"));
+    public static final HashSet<String> compatibleProtocolVersions = new HashSet<>(Arrays.asList("1.0", "1.1"));
     public final int CHUNK_SIZE = (int) 64e3;
 //    public final int CHUNK_SIZE = 5;
     private String rmi_name;

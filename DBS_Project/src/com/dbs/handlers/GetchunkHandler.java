@@ -4,9 +4,13 @@ import com.dbs.*;
 import com.dbs.filemanager.FileManager;
 import com.dbs.messages.ChunkMessage;
 import com.dbs.messages.GetchunkMessage;
+import com.dbs.messages.TCPSocketChunkMessage;
 import com.dbs.utils.Logger;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.nio.file.Paths;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -91,6 +95,50 @@ public class GetchunkHandler {
                 run();
             }
 
+        }
+        //was not waiting for this chunk
+    }
+
+    public synchronized void processReceivedChunk_TCP(TCPSocketChunkMessage msg) {
+
+        System.out.println("WOW, THIS IS NEW!");
+
+        if(chunkNo == Integer.parseInt(msg.getChunkNo())){
+
+            PeerController.getInstance().getTaskFutures().get(key).cancel(true);
+
+            PeerController.getInstance().getTaskFutures().remove(key);
+
+            nRetries = 0;
+
+            String hostname = msg.getHostname();
+            int port = msg.getPort();
+            System.out.println("Received Socket connection for CHUNK number " + msg.getChunkNo());
+
+            Socket clientSocket = null;
+            try {
+                clientSocket = new Socket(InetAddress.getByName(hostname), port);
+
+
+                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+                byte[] chunkBody = (byte[]) in.readObject();
+                FileManager.appendChunkToFile(fileName, chunkBody);
+
+                if(chunkBody.length < PeerController.getInstance().CHUNK_SIZE) {
+                    PeerController.getInstance().removeGetchunkHandler(this.fileId);
+                    completedTransfer = true;
+                    Logger.log("File " + fileId +  " recovered successfully!");
+                } else {
+                    chunkNo++;
+                    run();
+                }
+
+                in.close();
+                clientSocket.close();
+
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         }
         //was not waiting for this chunk
     }
