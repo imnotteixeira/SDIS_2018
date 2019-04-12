@@ -16,13 +16,9 @@ public class Client {
 
             stub.backup("./8ktest.jpg",3);
 
-            TimeUnit.SECONDS.sleep(30);
+            TimeUnit.SECONDS.sleep(20);
 
-            stub.reallocateSpace("./8ktest.jpg", 3);
-
-            //TimeUnit.SECONDS.sleep(5);
-
-            //stub.delete("./8ktest.jpg");
+            stub.reallocateSpace(1000);
 
         } catch (RemoteException e) {
             e.printStackTrace();

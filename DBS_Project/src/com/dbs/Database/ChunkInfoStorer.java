@@ -1,10 +1,12 @@
 package com.dbs.Database;
 
 import com.dbs.Peer;
+import com.dbs.PeerController;
 import com.dbs.filemanager.FileManager;
 import com.dbs.utils.Logger;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChunkInfoStorer implements Serializable {
 
     private static ChunkInfoStorer instance = null;
+    private int storageSizeInBytes = 0;
 
     public static ChunkInfoStorer loadFromFile(){
         try {
@@ -73,31 +76,40 @@ public class ChunkInfoStorer implements Serializable {
             e.printStackTrace();
         }
     }
-}
 
+    public ChunkKey[] getChunksToRemoveForNewSpace(int allocatedSpaceKB) {
+        int spaceDiff = (allocatedSpaceKB * 1000) - this.storageSizeInBytes;
 
+        if(spaceDiff <= 0){
+            return new ChunkKey[0];
+        }
 
+        Logger.log("[SPACE ALLOCATION] Need to remove " + spaceDiff + " to fit to new allocated space");
 
-class ChunkKey implements Serializable{
-    public String fileId;
-    public int chunkNo;
+        ArrayList<ChunkKey> result = new ArrayList<>();
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ChunkKey)) return false;
-        ChunkKey chunkKey = (ChunkKey) o;
-        return chunkNo == chunkKey.chunkNo &&
-                Objects.equals(fileId, chunkKey.fileId);
+        for(ChunkKey key : this.chunkInfos.keySet()){
+            if(this.chunkInfos.get(key).isStored()) {
+                result.add(key);
+                spaceDiff -= this.chunkInfos.get(key).getBodySize();
+                if (spaceDiff <= 0) {
+                    break;
+                }
+            }
+        }
+
+        if(spaceDiff > 0){
+            Logger.log("Could not reallocate to desired size!");
+        }
+
+        return (ChunkKey[]) result.toArray();
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(fileId, chunkNo);
+    public void updateStorageSize(int chunksAdded) {
+        this.storageSizeInBytes += chunksAdded * PeerController.getInstance().CHUNK_SIZE;
     }
 
-    ChunkKey(String fileId, int chunkNo){
-        this.fileId = fileId;
-        this.chunkNo = chunkNo;
+    public int getUsedBytes() {
+        return this.storageSizeInBytes;
     }
 }

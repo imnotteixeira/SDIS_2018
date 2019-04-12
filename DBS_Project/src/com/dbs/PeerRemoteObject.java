@@ -36,7 +36,7 @@ public class PeerRemoteObject implements IPeerInterface {
     }
 
     @Override
-    public void reallocateSpace(String filePath, int newSizeKB) throws RemoteException {
-        peer.reallocateSpace(filePath, newSizeKB);
+    public void reallocateSpace(int newSizeKB) throws RemoteException {
+        peer.reallocateSpace(newSizeKB);
     }
 }
