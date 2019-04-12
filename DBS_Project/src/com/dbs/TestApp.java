@@ -6,7 +6,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.concurrent.TimeUnit;
 
-public class Client {
+public class TestApp {
 
     public static void main(String[] args){
 
