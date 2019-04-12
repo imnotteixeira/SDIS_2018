@@ -303,6 +303,12 @@ public class PeerController {
         handler.run();
     }
 
+    public void recover_enhanced(String filePath) {
+        GetchunkHandler handler = new GetchunkHandler(filePath, true);
+        getchunkHandlers.put(handler.getFileId(), handler);
+        handler.run();
+    }
+
     public void delete(String filePath) {
         DeleteHandler handler = new DeleteHandler(filePath);
         handler.run();

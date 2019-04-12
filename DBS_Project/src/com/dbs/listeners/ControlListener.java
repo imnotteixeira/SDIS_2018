@@ -54,8 +54,9 @@ public class ControlListener extends Listener {
 
             TaskLogKey futureKey = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.CHUNK);
 
+
             // Send CHUNK in <randomTime> ms, if not canceled before
-            ScheduledFuture future = threadPool.schedule(()->this.processRecovery(key), randomWaitTime, TimeUnit.MILLISECONDS);
+            ScheduledFuture future = threadPool.schedule(()->this.processRecovery(key, new String(msg.getVersion(), 0, msg.getVersion().length)), randomWaitTime, TimeUnit.MILLISECONDS);
 
             PeerController.getInstance().getTaskFutures().put(futureKey, future);
 
@@ -96,7 +97,7 @@ public class ControlListener extends Listener {
 
     }
 
-    private void processRecovery(TaskLogKey key) {
+    private void processRecovery(TaskLogKey key, String version) {
 
         PeerController.getInstance().getTaskFutures().remove(key);
 
@@ -109,9 +110,9 @@ public class ControlListener extends Listener {
             return;
         }
 
-        if(Peer.VERSION.equals("1.0")) {
+        if(version.equals("1.0")) {
             processBaseVersionRecovery(key, chunkData);
-        } else if(Peer.VERSION.equals("1.1")) {
+        } else if(version.equals("1.1")) {
             processImprovedVersionRecovery(key, chunkData);
         }
 
@@ -119,7 +120,7 @@ public class ControlListener extends Listener {
 
     private void processBaseVersionRecovery(TaskLogKey key, byte[] chunkData) {
         ChunkMessage msg = new ChunkMessage(
-                Peer.VERSION.getBytes(),
+                "1.0".getBytes(),
                 Peer.PEER_ID,
                 key.fileId,
                 String.valueOf(key.chunkNo),

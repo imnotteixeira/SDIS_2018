@@ -19,6 +19,7 @@ public class GetchunkHandler {
 
     private final static int[] DELAY_PER_ATTEMPT = {0, 1, 2, 4, 8};
     private static final int MAX_RETRIES = 4;
+    private final boolean isEnhanced;
 
     private String fileId;
     private String fileName;
@@ -28,9 +29,15 @@ public class GetchunkHandler {
     private boolean completedTransfer = false;
 
     public GetchunkHandler(String filePath) {
+        this(filePath, false);
+    }
+
+    public GetchunkHandler(String filePath, boolean isEnhanced) {
+        this.isEnhanced = isEnhanced;
         try {
             fileId = FileManager.calcFileId(Paths.get(filePath));
             fileName = filePath;
+
             FileManager.resetRecoveredFileIfExists(filePath);
         } catch (IOException e) {
             e.printStackTrace();
@@ -57,7 +64,7 @@ public class GetchunkHandler {
     public synchronized void sendGetchunk() {
 
         GetchunkMessage msg = new GetchunkMessage(
-                Peer.VERSION.getBytes(),
+                isEnhanced ? "1.1".getBytes() : "1.0".getBytes(),
                 Peer.PEER_ID,
                 fileId,
                 String.valueOf(chunkNo)

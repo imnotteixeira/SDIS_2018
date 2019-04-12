@@ -9,28 +9,80 @@ import java.util.concurrent.TimeUnit;
 public class Client {
 
     public static void main(String[] args){
+
+
+
+//        The testing application should be invoked as follows:
+//
+//        $ java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>
+//                where:
+//
+//<peer_ap>
+//                Is the peer's access point. This depends on the implementation. (See the previous section)
+//<operation>
+//                Is the operation the peer of the backup service must execute. It can be either the triggering of the subprotocol to test, or the retrieval of the peer's internal state. In the first case it must be one of: BACKUP, RESTORE, DELETE, RECLAIM. In the case of enhancements, you must append the substring ENH at the end of the respecive subprotocol, e.g. BACKUPENH. To retrieve the internal state, the value of this argument must be STATE
+//<opnd_1>
+//                Is either the path name of the file to backup/restore/delete, for the respective 3 subprotocols, or, in the case of RECLAIM the maximum amount of disk space (in KByte) that the service can use to store the chunks. In the latter case, the peer should execute the RECLAIM protocol, upon deletion of any chunk. The STATE operation takes no operands.
+//<opnd_2>
+//                This operand is an integer that specifies the desired replication degree and applies only to the backup protocol (or its enhancement)
+//        E.g., by invoking:
+        String peer_ap = "";
+        String operation = "";
+        String op1 = "";
+        String op2 = "";
+
+        if(args.length != 4 && args.length != 5) {
+           //wrong usage
+            return;
+
+        }
+
+        peer_ap = args[1];
+        operation = args[2];
+        op1 = args[3];
+
+        if(args.length == 5) {
+            op2 = args[4];
+        }
+
+
+
         try {
             Registry reg = LocateRegistry.getRegistry("localhost");
 
-            IPeerInterface stub = (IPeerInterface) reg.lookup("peer_1");
+            IPeerInterface stub = (IPeerInterface) reg.lookup(peer_ap);
 
-            stub.backup("./8ktest.jpg",2);
-
-            TimeUnit.SECONDS.sleep(10);
-
-            stub.recover("./8ktest.jpg");
-
-            //TimeUnit.SECONDS.sleep(5);
-
-            //stub.delete("./8ktest.jpg");
+            processArgs(stub, operation, op1, op2);
 
         } catch (RemoteException e) {
             e.printStackTrace();
         } catch (NotBoundException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
 
+    }
+
+    public static void processArgs(IPeerInterface stub, String operation, String op1, String op2) throws RemoteException {
+        switch(operation) {
+            case "BACKUP": case "BACKUPENH"://vale??
+                stub.backup(op1, Integer.parseInt(op2));
+                break;
+
+            case "RESTORE":
+                stub.recover(op1);
+                break;
+            case "RESTOREENH":
+                stub.recover_enhanced(op1);
+                break;
+            case "DELETE":
+                stub.delete(op1);
+                break;
+            case "RECLAIM":
+                break;
+            case "STATE":
+                break;
+
+
+        }
     }
 }
