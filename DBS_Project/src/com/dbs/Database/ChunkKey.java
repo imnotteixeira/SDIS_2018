@@ -25,4 +25,12 @@ public class ChunkKey implements Serializable {
         this.fileId = fileId;
         this.chunkNo = chunkNo;
     }
+
+    @Override
+    public String toString() {
+        return "ChunkKey{" +
+                "fileId='" + fileId + '\'' +
+                ", chunkNo=" + chunkNo +
+                '}';
+    }
 }

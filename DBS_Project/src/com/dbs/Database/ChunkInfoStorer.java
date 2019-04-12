@@ -7,6 +7,7 @@ import com.dbs.utils.Logger;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -77,11 +78,11 @@ public class ChunkInfoStorer implements Serializable {
         }
     }
 
-    public ChunkKey[] getChunksToRemoveForNewSpace(int allocatedSpaceKB) {
+    public ArrayList<ChunkKey> getChunksToRemoveForNewSpace(int allocatedSpaceKB) {
         int spaceDiff = (allocatedSpaceKB * 1000) - this.storageSizeInBytes;
 
         if(spaceDiff <= 0){
-            return new ChunkKey[0];
+            return new ArrayList<>();
         }
 
         Logger.log("[SPACE ALLOCATION] Need to remove " + spaceDiff + " to fit to new allocated space");
@@ -102,7 +103,14 @@ public class ChunkInfoStorer implements Serializable {
             Logger.log("Could not reallocate to desired size!");
         }
 
-        return (ChunkKey[]) result.toArray();
+        System.out.println("CHUNKINFOS");
+        for(ChunkKey key : this.chunkInfos.keySet()){
+            if(this.chunkInfos.get(key).isStored()) {
+                System.out.println(this.chunkInfos.get(key));
+            }
+        }
+
+        return result;
     }
 
     public void updateStorageSize(int chunksAdded) {
