@@ -79,8 +79,9 @@ public class ChunkInfoStorer implements Serializable {
     }
 
     public ArrayList<ChunkKey> getChunksToRemoveForNewSpace(int allocatedSpaceKB) {
-        int spaceDiff = (allocatedSpaceKB * 1000) - this.storageSizeInBytes;
+        int spaceDiff = this.storageSizeInBytes - (allocatedSpaceKB * 1000);
 
+        System.out.println(spaceDiff);
         if(spaceDiff <= 0){
             return new ArrayList<>();
         }

@@ -53,6 +53,7 @@ public class ChunkInfo implements Serializable {
     }
 
     public ChunkInfo removePeer(String senderId) {
+        System.out.println("here");
         this.peers.remove(Integer.parseInt(senderId));
         if(senderId == Peer.PEER_ID) {
             ChunkInfoStorer.getInstance().updateStorageSize(-1);

@@ -320,6 +320,7 @@ public class PeerController {
     public void reallocateSpace(int newSizeKB) {
 
         ALLOCATED_SPACE_KB = newSizeKB;
+        System.out.println("hello");
 
         for(ChunkKey key : ChunkInfoStorer.getInstance().getChunksToRemoveForNewSpace(ALLOCATED_SPACE_KB)){
             ChunkInfoStorer.getInstance().getChunkInfo(key.fileId, key.chunkNo).removePeer(Peer.PEER_ID);
