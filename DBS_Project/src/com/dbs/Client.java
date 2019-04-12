@@ -18,7 +18,7 @@ public class Client {
 
             TimeUnit.SECONDS.sleep(30);
 
-            stub.removed("./8ktest.jpg", 3);
+            stub.reallocateSpace("./8ktest.jpg", 3);
 
             //TimeUnit.SECONDS.sleep(5);
 

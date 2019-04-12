@@ -1,8 +1,11 @@
 package com.dbs.Database;
 
+import com.dbs.Peer;
 import com.dbs.utils.Logger;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 
 public class ChunkInfo implements Serializable {
@@ -31,7 +34,9 @@ public class ChunkInfo implements Serializable {
         return desiredReplication;
     }
 
-
+    public boolean isStored(){
+        return peers.contains(Integer.parseInt(Peer.PEER_ID));
+    }
 
 
     /// SETTERS - Each should call saveChunksInformation
@@ -56,5 +61,9 @@ public class ChunkInfo implements Serializable {
         this.desiredReplication = replicationDegree;
         saveChunksInformation();
         return this;
+    }
+
+    public HashSet<Integer> getPeers() {
+        return peers;
     }
 }

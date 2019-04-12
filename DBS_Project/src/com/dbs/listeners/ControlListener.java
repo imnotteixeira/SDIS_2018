@@ -72,18 +72,15 @@ public class ControlListener extends Listener {
 
             ChunkInfo chunkStatus = ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo()).addPeer(msg.getSenderId());
 
-            TaskLogKey futureKey = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.PUTCHUNK);
+            TaskLogKey sentPutchunkFutureKey = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.PUTCHUNK);
 
             TaskLogKey futureKeyRemoved = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.REMOVED);
 
-            if(PeerController.getInstance().getTaskFutures().containsKey(futureKeyRemoved)){
-                PeerController.getInstance().getTaskFutures().get(futureKey).cancel(true);
-                PeerController.getInstance().getTaskFutures().remove(futureKey);
-            }
-
             if(chunkStatus.isReplicationReached()) {
-                PeerController.getInstance().getTaskFutures().get(futureKey).cancel(true);
-                PeerController.getInstance().getTaskFutures().remove(futureKey);
+                PeerController.getInstance().getTaskFutures().get(sentPutchunkFutureKey).cancel(true);
+                PeerController.getInstance().getTaskFutures().remove(sentPutchunkFutureKey);
+                PeerController.getInstance().getTaskFutures().get(futureKeyRemoved).cancel(true);
+                PeerController.getInstance().getTaskFutures().remove(futureKeyRemoved);
             }
 
         } catch(IllegalStateException e) {
@@ -138,6 +135,8 @@ public class ControlListener extends Listener {
         ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo())
             .removePeer(msg.getSenderId());
 
+        Logger.log("New perceived: " + ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo()).getPerceivedReplication());
+
         try {
             int randomWaitTime = (int) (Math.random() * 400);
 
@@ -159,7 +158,7 @@ public class ControlListener extends Listener {
 
     private void processRemovedChunk(TaskLogKey key) {
         try {
-            PutchunkHandler handler = new PutchunkHandler(key.fileId, key.chunkNo, 1, FileManager.getChunk(key.fileId, key.chunkNo));
+            PutchunkHandler handler = new PutchunkHandler(key.fileId, key.chunkNo, ChunkInfoStorer.getInstance().getChunkInfo(key.fileId, key.chunkNo).getDesiredReplication(), FileManager.getChunk(key.fileId, key.chunkNo));
             handler.send();
         } catch (FileNotFoundException e) {
             //this peer does not have this chunk and so cannot send it

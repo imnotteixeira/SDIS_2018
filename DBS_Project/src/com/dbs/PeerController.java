@@ -309,7 +309,7 @@ public class PeerController {
         handler.run();
     }
 
-    public void removed(String filePath, int chunkNo) {
+    public void reallocateSpace(String filePath, int chunkNo) {
         RemovedHandler handler = new RemovedHandler(filePath);
         handler.run(chunkNo);
     }

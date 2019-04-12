@@ -32,14 +32,18 @@ public class BackupListener extends Listener {
             //ChunkInfo value = new ChunkInfo(new HashSet<>(), Integer.parseInt(msg.getReplicationDegree()));
             //PeerController.getInstance().getTasks().put(key, value);
 
-            ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo())
-                .setDesiredReplicationDegree(msg.getReplicationDegree());
+            if(ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo()).isStored()){
+                this.chunkStorer.sendStoredMsg(msg);
+            }else {
+                ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo())
+                        .setDesiredReplicationDegree(msg.getReplicationDegree());
 
-            int randomWaitTime = (int) (Math.random() * 400);
+                int randomWaitTime = (int) (Math.random() * 400);
 
-            Logger.log("Waiting " + randomWaitTime + " ms before trying to store chunk!");
+                Logger.log("Waiting " + randomWaitTime + " ms before trying to store chunk!");
 
-            threadPool.schedule(()->this.processStorage(msg), randomWaitTime, TimeUnit.MILLISECONDS);
+                threadPool.schedule(() -> this.processStorage(msg), randomWaitTime, TimeUnit.MILLISECONDS);
+            }
 
         } catch(IllegalStateException e) {
             //No match found - invalid msg format
@@ -53,10 +57,8 @@ public class BackupListener extends Listener {
         ChunkInfo status = ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo());
 
 //        System.out.println("The current replication degree is " + status.getPeers().size() + ". The desired one is " + status.desiredReplication);
-        if(!status.isReplicationReached()) {
 
-//            System.out.println("Processing PUTCHUNK Sender ID: "+ msg.getSenderId() + "| peer_id: " + Peer.PEER_ID);
-//            System.out.println("Sending STORED!");
+        if(!status.isReplicationReached()) {
             this.chunkStorer.store(msg);
 
         }
