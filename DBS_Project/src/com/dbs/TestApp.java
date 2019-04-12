@@ -31,20 +31,23 @@ public class TestApp {
         String op1 = "";
         String op2 = "";
 
-        if(args.length != 4 && args.length != 5) {
-           //wrong usage
+        if(args.length != 3 && args.length != 4) {
+            System.out.println("WRONG USAGE!");
+            System.out.println("usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>");
             return;
 
         }
 
-        peer_ap = args[1];
-        operation = args[2];
-        op1 = args[3];
+        peer_ap = args[0];
+        operation = args[1];
+        op1 = args[2];
 
-        if(args.length == 5) {
-            op2 = args[4];
+        if(args.length == 4) {
+            op2 = args[3];
         }
 
+        System.out.println(peer_ap);
+        System.out.println(operation);
 
 
         try {
@@ -63,8 +66,11 @@ public class TestApp {
     }
 
     public static void processArgs(IPeerInterface stub, String operation, String op1, String op2) throws RemoteException {
+
+        System.out.println(operation + " --- " + op1);
         switch(operation) {
             case "BACKUP": case "BACKUPENH"://vale??
+                System.out.println("should be here");
                 stub.backup(op1, Integer.parseInt(op2));
                 break;
 

@@ -9,10 +9,7 @@ import com.dbs.utils.Logger;
 import com.dbs.utils.NetworkAddress;
 
 import java.io.*;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -158,23 +155,42 @@ public class ControlListener extends Listener {
 
         msg.send();
 
+        ObjectOutputStream out = null;
+        Socket clientSocket = null;
+
         //wait for response
         try {
-            Socket clientSocket = serverSocket.accept();
+            clientSocket = serverSocket.accept();
 
             //when connection, send chunk data
-            ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+            out = new ObjectOutputStream(clientSocket.getOutputStream());
             out.writeObject(chunkData);
 
-            out.close();
-            clientSocket.close();
 
 
+
+        } catch (SocketTimeoutException e) {
+            Logger.log("Did not make connection to send chunk, releasing socket...");
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if(out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(clientSocket != null) {
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
         }
-
-
 
 
     }

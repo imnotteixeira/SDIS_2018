@@ -108,8 +108,6 @@ public class GetchunkHandler {
 
     public synchronized void processReceivedChunk_TCP(TCPSocketChunkMessage msg) {
 
-        System.out.println("WOW, THIS IS NEW!");
-
         if(chunkNo == Integer.parseInt(msg.getChunkNo())){
 
             PeerController.getInstance().getTaskFutures().get(key).cancel(true);
