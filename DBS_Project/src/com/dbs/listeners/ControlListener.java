@@ -8,12 +8,9 @@ import com.dbs.handlers.PutchunkHandler;
 import com.dbs.messages.*;
 import com.dbs.utils.Logger;
 import com.dbs.utils.NetworkAddress;
-import javafx.concurrent.Task;
 
 import java.io.*;
 import java.net.*;
-import javax.xml.crypto.Data;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.DatagramPacket;
 import java.util.concurrent.ScheduledFuture;
@@ -59,7 +56,7 @@ public class ControlListener extends Listener {
 
 
             // Send CHUNK in <randomTime> ms, if not canceled before
-            ScheduledFuture future = threadPool.schedule(()->this.processRecovery(key, new String(msg.getVersion(), 0, msg.getVersion().length)), randomWaitTime, TimeUnit.MILLISECONDS);
+            ScheduledFuture future = threadPool.schedule(()->this.processRecovery(futureKey, new String(msg.getVersion(), 0, msg.getVersion().length)), randomWaitTime, TimeUnit.MILLISECONDS);
 
             PeerController.getInstance().getTaskFutures().put(futureKey, future);
 

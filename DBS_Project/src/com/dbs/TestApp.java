@@ -4,7 +4,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.concurrent.TimeUnit;
 
 public class TestApp {
 
@@ -46,9 +45,6 @@ public class TestApp {
             op2 = args[3];
         }
 
-        System.out.println(peer_ap);
-        System.out.println(operation);
-
 
         try {
             Registry reg = LocateRegistry.getRegistry("localhost");
@@ -67,10 +63,14 @@ public class TestApp {
 
     public static void processArgs(IPeerInterface stub, String operation, String op1, String op2) throws RemoteException {
 
-        System.out.println(operation + " --- " + op1);
         switch(operation) {
             case "BACKUP": case "BACKUPENH"://vale??
-                System.out.println("should be here");
+
+                if(op2.equals("")) {
+                    System.out.println("Replication Degree not specified");
+                    return;
+                }
+
                 stub.backup(op1, Integer.parseInt(op2));
                 break;
 
@@ -84,6 +84,7 @@ public class TestApp {
                 stub.delete(op1);
                 break;
             case "RECLAIM":
+                stub.reallocateSpace(Integer.parseInt(op1));
                 break;
             case "STATE":
                 break;

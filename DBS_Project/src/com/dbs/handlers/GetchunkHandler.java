@@ -48,7 +48,7 @@ public class GetchunkHandler {
     public void run() {
 
         if(nRetries > MAX_RETRIES) {
-            Logger.log("Could not send getchunk. Exceeded number of retries");
+            Logger.log("GETCHUNK: Exceeded number of retries - perhaps the file is not available?");
             return;
         }
 
