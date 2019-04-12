@@ -1,5 +1,6 @@
 package com.dbs.messages;
 
+import com.dbs.Communicator;
 import com.dbs.PeerController;
 
 import java.io.IOException;
@@ -9,19 +10,14 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PutchunkMessage extends PeerMessage {
+public class PutchunkMessage extends ChunkDependentMessage {
     private final byte[] body;
-    private int headerSize;
     private final String replicationDegree;
-    private String chunkNo;
 
     public PutchunkMessage(byte[] version, String senderId, String fileId, String chunkNo, String replicationDegree, byte[] body) {
-        super("PUTCHUNK", version, senderId, fileId);
-        this.chunkNo = chunkNo;
+        super("PUTCHUNK", version, senderId, fileId, chunkNo);
         this.body = body;
         this.replicationDegree = replicationDegree;
-
-        this.headerSize = this.toString().getBytes().length + PeerMessage.CRLF.getBytes().length * 2;
     }
 
     public static PutchunkMessage fromString(byte[] src) throws IllegalStateException {
@@ -51,9 +47,17 @@ public class PutchunkMessage extends PeerMessage {
     }
 
     @Override
+    protected String getHostname() { return PeerController.connectionInfo.getBackupChannelHostname(); }
+
+    @Override
+    protected int getPort() { return PeerController.connectionInfo.getBackupPort(); }
+
+    @Override
+    protected Communicator getCommunicator() { return PeerController.connectionInfo.getControlChannelCommunicator(); }
+
+    @Override
     public String toString() {
-        return super.toString() + " "
-                + chunkNo + " "
+        return super.toString()
                 + replicationDegree + " ";
     }
 
@@ -63,30 +67,6 @@ public class PutchunkMessage extends PeerMessage {
                 .put(PeerMessage.CRLF.getBytes())
                 .put(PeerMessage.CRLF.getBytes())
                 .put(body).array();
-    }
-
-
-
-    @Override
-    public void send() {
-
-        String hostname = PeerController.connectionInfo.getBackupChannelHostname();
-        int port = PeerController.connectionInfo.getBackupPort();
-
-        final byte[] msg = getByteMsg();
-
-        try {
-            PeerController.getInstance().getConnectionInfo().getBackupChannelCommunicator().send(msg, hostname, port);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-    }
-
-    public String getChunkNo() {
-        return chunkNo;
     }
 
     public byte[] getBody() {

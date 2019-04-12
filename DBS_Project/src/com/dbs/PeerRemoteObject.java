@@ -26,7 +26,6 @@ public class PeerRemoteObject implements IPeerInterface {
 
     @Override
     public void recover(String filePath) throws RemoteException {
-
         peer.recover(filePath);
 
     }
@@ -41,5 +40,10 @@ public class PeerRemoteObject implements IPeerInterface {
     @Override
     public void delete(String filePath) throws RemoteException {
         peer.delete(filePath);
+    }
+
+    @Override
+    public void reallocateSpace(int newSizeKB) throws RemoteException {
+        peer.reallocateSpace(newSizeKB);
     }
 }

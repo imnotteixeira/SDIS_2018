@@ -42,8 +42,6 @@ public class PutchunkHandler {
 
         TaskLogKey key = new TaskLogKey(fileId, chunkNo, TaskType.PUTCHUNK);
 
-
-
         ScheduledFuture future = PeerController.getInstance().getThreadPool().schedule((Runnable) this::sendPutchunk, DELAY_PER_ATTEMPT[nRetries], TimeUnit.SECONDS);
         Logger.log("Putchunk Sent! Waiting " + DELAY_PER_ATTEMPT[nRetries] + "s to try again");
 

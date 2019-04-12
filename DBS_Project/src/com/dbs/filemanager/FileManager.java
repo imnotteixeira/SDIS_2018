@@ -57,6 +57,16 @@ public class FileManager {
         writeChunk(chunkPath, chunkBody);
     }
 
+    public static void removeChunk(String fileId, int chunkNo) {
+
+        File chunkFile = Paths.get(BACKUP_DIR, fileId, "chk" + chunkNo).toFile();
+
+        if(chunkFile.exists()) {
+            chunkFile.delete();
+        }
+
+    }
+
     public static void createPeerFileTree(){
 
         if(FileManager.PEER_DIR == null){

@@ -2,10 +2,12 @@ package com.dbs;
 
 import com.dbs.Database.ChunkInfo;
 import com.dbs.Database.ChunkInfoStorer;
+import com.dbs.Database.ChunkKey;
 import com.dbs.filemanager.FileManager;
 import com.dbs.handlers.DeleteHandler;
 import com.dbs.handlers.GetchunkHandler;
 import com.dbs.handlers.PutchunkHandler;
+import com.dbs.handlers.RemovedHandler;
 import com.dbs.listeners.BackupListener;
 import com.dbs.listeners.ControlListener;
 import com.dbs.listeners.Listener;
@@ -33,6 +35,7 @@ import java.util.concurrent.*;
 public class PeerController {
 
     public static final HashSet<String> compatibleProtocolVersions = new HashSet<>(Arrays.asList("1.0", "1.1"));
+    public int ALLOCATED_SPACE_KB = 10000;
     public final int CHUNK_SIZE = (int) 64e3;
 //    public final int CHUNK_SIZE = 5;
     private String rmi_name;
@@ -312,6 +315,19 @@ public class PeerController {
     public void delete(String filePath) {
         DeleteHandler handler = new DeleteHandler(filePath);
         handler.run();
+    }
+
+    public void reallocateSpace(int newSizeKB) {
+
+        ALLOCATED_SPACE_KB = newSizeKB;
+
+        for(ChunkKey key : ChunkInfoStorer.getInstance().getChunksToRemoveForNewSpace(ALLOCATED_SPACE_KB)){
+            ChunkInfoStorer.getInstance().getChunkInfo(key.fileId, key.chunkNo).removePeer(Peer.PEER_ID);
+            FileManager.removeChunk(key.fileId, key.chunkNo);
+
+            RemovedHandler handler = new RemovedHandler(key.fileId);
+            handler.run(key.chunkNo);
+        }
     }
 
     public ConcurrentHashMap<TaskLogKey, ChunkInfo> getTasks() {
