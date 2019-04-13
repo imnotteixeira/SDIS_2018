@@ -41,7 +41,7 @@ public class Communicator {
 
             String version = PeerMessage.getMsgProtocolVersion(msgSrc);
 
-            if(!senderId.equals(Peer.PEER_ID) && PeerController.compatibleProtocolVersions.contains(version)) {
+            if(!senderId.equals(Peer.PEER_ID) && PeerController.getInstance().isCompatible(version)) {
                 return packet;
             }
         }

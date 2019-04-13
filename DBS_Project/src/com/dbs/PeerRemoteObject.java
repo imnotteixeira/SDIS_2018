@@ -25,15 +25,36 @@ public class PeerRemoteObject implements IPeerInterface {
     }
 
     @Override
+    public String backup_enhanced(String filePath, int replicationDegree) throws RemoteException {
+
+        if(peer.isCompatible("1.1")) {
+            peer.backup(filePath, replicationDegree);
+            return "";
+        }
+
+        return "Peer is not compatible with the requested protocol, use the base version instead!";
+
+
+
+
+
+    }
+
+    @Override
     public void recover(String filePath) throws RemoteException {
         peer.recover(filePath);
 
     }
 
     @Override
-    public void recover_enhanced(String filePath) throws RemoteException {
+    public String recover_enhanced(String filePath) throws RemoteException {
 
-        peer.recover_enhanced(filePath);
+        if(peer.isCompatible("1.1")) {
+            peer.recover_enhanced(filePath);
+            return "";
+        }
+
+        return "Peer is not compatible with the requested protocol, use the base version instead!";
 
     }
 

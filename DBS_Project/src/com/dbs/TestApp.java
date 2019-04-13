@@ -51,7 +51,7 @@ public class TestApp {
 
             IPeerInterface stub = (IPeerInterface) reg.lookup(peer_ap);
 
-            processArgs(stub, operation, op1, op2);
+            System.out.println(processArgs(stub, operation, op1, op2));
 
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -61,35 +61,41 @@ public class TestApp {
 
     }
 
-    public static void processArgs(IPeerInterface stub, String operation, String op1, String op2) throws RemoteException {
+    public static String processArgs(IPeerInterface stub, String operation, String op1, String op2) throws RemoteException {
 
         switch(operation) {
-            case "BACKUP": case "BACKUPENH"://vale??
+            case "BACKUP":
 
                 if(op2.equals("")) {
                     System.out.println("Replication Degree not specified");
-                    return;
+                    return "";
                 }
 
                 stub.backup(op1, Integer.parseInt(op2));
-                break;
+                return "";
+            case "BACKUPENH":
+                if(op2.equals("")) {
+                    System.out.println("Replication Degree not specified");
+                }
 
+                return stub.backup_enhanced(op1, Integer.parseInt(op2));
             case "RESTORE":
                 stub.recover(op1);
-                break;
+                return "";
             case "RESTOREENH":
-                stub.recover_enhanced(op1);
-                break;
+                return stub.recover_enhanced(op1);
+
             case "DELETE":
                 stub.delete(op1);
-                break;
+                return "";
             case "RECLAIM":
                 stub.reallocateSpace(Integer.parseInt(op1));
-                break;
+                return "";
             case "STATE":
-                break;
-
+                return "";
 
         }
+
+        return "";
     }
 }

@@ -19,7 +19,7 @@ public class ChunkInfoStorer implements Serializable {
 
     public static ChunkInfoStorer loadFromFile(){
         try {
-            ObjectInputStream i = new ObjectInputStream(new FileInputStream(new File(FileManager.PEER_DIR,"state.txt")));
+            ObjectInputStream i = new ObjectInputStream(new FileInputStream(new File(FileManager.PEER_DIR,"state.pst")));
             // Write objects to file
             ChunkInfoStorer.instance = (ChunkInfoStorer) i.readObject();
 
@@ -65,7 +65,7 @@ public class ChunkInfoStorer implements Serializable {
         ChunkInfoStorer object = ChunkInfoStorer.getInstance();
 
         try {
-            ObjectOutputStream o = new ObjectOutputStream(new FileOutputStream(new File(FileManager.PEER_DIR,"state.txt")));
+            ObjectOutputStream o = new ObjectOutputStream(new FileOutputStream(new File(FileManager.PEER_DIR,"state.pst")));
             // Write objects to file
             o.writeObject(object);
 

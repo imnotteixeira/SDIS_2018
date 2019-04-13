@@ -34,7 +34,7 @@ import java.util.concurrent.*;
 
 public class PeerController {
 
-    public static final HashSet<String> compatibleProtocolVersions = new HashSet<>(Arrays.asList("1.0", "1.1"));
+    public HashSet<String> compatibleProtocolVersions = new HashSet<>();
     public int ALLOCATED_SPACE_KB = 10000;
     public final int CHUNK_SIZE = (int) 64e3;
 //    public final int CHUNK_SIZE = 5;
@@ -76,6 +76,11 @@ public class PeerController {
     private PeerController(String version, String peer_id, String rmi_name, String mc_address, String mdb_address, String mdr_address) {
 
         this.rmi_name = rmi_name;
+
+        this.compatibleProtocolVersions.add("1.0");
+        if(version.equals("1.1")) {
+            this.compatibleProtocolVersions.add("1.1");
+        }
 
         NetworkAddress mc_address_addr = new NetworkAddress(mc_address);
         NetworkAddress mdb_address_addr = new NetworkAddress(mdb_address);
@@ -320,7 +325,6 @@ public class PeerController {
     public void reallocateSpace(int newSizeKB) {
 
         ALLOCATED_SPACE_KB = newSizeKB;
-        System.out.println("hello");
 
         for(ChunkKey key : ChunkInfoStorer.getInstance().getChunksToRemoveForNewSpace(ALLOCATED_SPACE_KB)){
             ChunkInfoStorer.getInstance().getChunkInfo(key.fileId, key.chunkNo).removePeer(Peer.PEER_ID);
@@ -353,5 +357,9 @@ public class PeerController {
 
     public void removeGetchunkHandler(String fileId) {
         getchunkHandlers.remove(fileId);
+    }
+
+    public boolean isCompatible(String s) {
+        return this.compatibleProtocolVersions.contains(s);
     }
 }
