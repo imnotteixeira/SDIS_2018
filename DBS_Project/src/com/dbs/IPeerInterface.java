@@ -9,4 +9,5 @@ public interface IPeerInterface extends Remote {
     String recover_enhanced(String filePath) throws RemoteException;
     void delete(String filePath) throws RemoteException;
     void reallocateSpace(int newSizeKB) throws RemoteException;
+    String getState() throws RemoteException;
 }

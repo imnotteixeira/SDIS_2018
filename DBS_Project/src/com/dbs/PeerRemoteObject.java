@@ -2,7 +2,6 @@ package com.dbs;
 
 import com.dbs.filemanager.FileManager;
 
-import java.io.File;
 import java.rmi.RemoteException;
 
 public class PeerRemoteObject implements IPeerInterface {
@@ -66,5 +65,10 @@ public class PeerRemoteObject implements IPeerInterface {
     @Override
     public void reallocateSpace(int newSizeKB) throws RemoteException {
         peer.reallocateSpace(newSizeKB);
+    }
+
+    @Override
+    public String getState(){
+        return peer.getState();
     }
 }

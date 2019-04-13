@@ -3,6 +3,7 @@ package com.dbs.Database;
 import com.dbs.Peer;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashSet;
 
 public class ChunkInfo implements Serializable {
@@ -75,5 +76,11 @@ public class ChunkInfo implements Serializable {
     public ChunkInfo setBodySize(int size) {
         this.bodySize = size;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "Perceived Replication Factor: " + this.getPerceivedReplication()
+                + ", Body Size: " + this.bodySize + " bytes";
     }
 }

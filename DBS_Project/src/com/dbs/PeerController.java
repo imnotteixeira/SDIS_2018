@@ -262,6 +262,8 @@ public class PeerController {
             File file = path.toFile();
             FileInputStream file_stream = new FileInputStream(file);
 
+            ChunkInfoStorer.getInstance().addPathToFileId(path.toString(), fileId);
+
             byte[] chunk = new byte[CHUNK_SIZE];
             int chunkLen = 0;
             int chunkNo = -1;
@@ -333,6 +335,10 @@ public class PeerController {
             RemovedHandler handler = new RemovedHandler(key.fileId);
             handler.run(key.chunkNo);
         }
+    }
+
+    public String getState(){
+        return "State Information of Peer " + Peer.PEER_ID + ":\n\nAllocated Storage Space: " + this.ALLOCATED_SPACE_KB + " KB\n\n" + ChunkInfoStorer.getInstance().getInfo();
     }
 
     public ConcurrentHashMap<TaskLogKey, ChunkInfo> getTasks() {

@@ -27,7 +27,6 @@ public class PutchunkHandler {
         this.replicationDegree = replicationDegree;
         this.chunk = chunk;
 
-
         this.nRetries = 0;
     }
 

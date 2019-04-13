@@ -30,7 +30,7 @@ public class TestApp {
         String op1 = "";
         String op2 = "";
 
-        if(args.length != 3 && args.length != 4) {
+        if(args.length != 3 && args.length != 4 && !(args.length == 2 && args[1].equals("STATE"))) {
             System.out.println("WRONG USAGE!");
             System.out.println("usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>");
             return;
@@ -39,7 +39,10 @@ public class TestApp {
 
         peer_ap = args[0];
         operation = args[1];
-        op1 = args[2];
+
+        if(args.length >= 3){
+            op1 = args[2];
+        }
 
         if(args.length == 4) {
             op2 = args[3];
@@ -92,8 +95,8 @@ public class TestApp {
                 stub.reallocateSpace(Integer.parseInt(op1));
                 return "";
             case "STATE":
-                return "";
-
+                System.out.println(stub.getState());
+                break;
         }
 
         return "";

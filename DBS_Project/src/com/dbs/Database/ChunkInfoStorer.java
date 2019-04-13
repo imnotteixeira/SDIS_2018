@@ -6,6 +6,7 @@ import com.dbs.filemanager.FileManager;
 import com.dbs.utils.Logger;
 
 import java.io.*;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -16,6 +17,10 @@ public class ChunkInfoStorer implements Serializable {
 
     private static ChunkInfoStorer instance = null;
     private int storageSizeInBytes = 0;
+
+    private ConcurrentHashMap<ChunkKey, ChunkInfo> chunkInfos = new ConcurrentHashMap<>();
+
+    private ConcurrentHashMap<String, String> backedUpPathnameToFileId = new ConcurrentHashMap<>();
 
     public static ChunkInfoStorer loadFromFile(){
         try {
@@ -40,9 +45,6 @@ public class ChunkInfoStorer implements Serializable {
 
         return ChunkInfoStorer.instance;
     }
-
-    private ConcurrentHashMap<ChunkKey, ChunkInfo> chunkInfos = new ConcurrentHashMap<>();
-
 
     public ChunkInfo getChunkInfo(String fileId, String chunkNo) {
         return getChunkInfo(fileId, Integer.parseInt(chunkNo));
@@ -121,4 +123,61 @@ public class ChunkInfoStorer implements Serializable {
     public int getUsedBytes() {
         return this.storageSizeInBytes;
     }
+
+    public void addPathToFileId(String path, String fileId) {
+        this.backedUpPathnameToFileId.put(path, fileId);
+    }
+
+    public String getInfo(){
+
+        String result = "--------------------------------------" +
+                "\n            BACKED UP FILES" +
+                "\n--------------------------------------";
+
+        if(this.backedUpPathnameToFileId.isEmpty()){
+            result += "\n No chunks backed up in this peer!";
+        }else {
+            for (String filePath : this.backedUpPathnameToFileId.keySet()) {
+                String fileId = this.backedUpPathnameToFileId.get(filePath);
+
+                result += "\n\nFile Path: " + filePath
+                        + "\nFile Id: " + fileId
+                        + "\nReplication factor: " + this.chunkInfos.get(new ChunkKey(fileId, 0)).getDesiredReplication()
+                        + "\nChunks Information: " + getFileChunkInfo(fileId);
+            }
+        }
+
+        result += "\n\n\n--------------------------------------" +
+                "\n            STORED CHUNKS" +
+                "\n--------------------------------------\n";
+
+        int storedChunksCount = 0;
+
+        for (ChunkKey key : this.chunkInfos.keySet()) {
+            if (chunkInfos.get(key).isStored()) {
+                result += "\n    Chunk" + key.chunkNo + " of File Id " + key.fileId + " - " + chunkInfos.get(key).toString();
+                storedChunksCount++;
+            }
+        }
+
+        if(storedChunksCount == 0) result += "\n No chunks stored in this peer!";
+
+        return result;
+    }
+
+    private String getFileChunkInfo(String fileId) {
+
+        String result = "";
+        int chunkNo = 0;
+
+        while (this.chunkInfos.containsKey(new ChunkKey(fileId, chunkNo))){
+            ChunkInfo info = this.chunkInfos.get(new ChunkKey(fileId, chunkNo));
+            result += "\n    Chunk " + chunkNo + " - Perceived Replication Degree: " + info.getPerceivedReplication();
+            chunkNo++;
+        }
+
+        return result;
+    }
+
+
 }
