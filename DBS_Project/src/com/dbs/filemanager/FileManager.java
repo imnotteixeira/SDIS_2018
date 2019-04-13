@@ -24,6 +24,13 @@ public class FileManager {
     public static String BACKUP_DIR = null;
     public static String RESTORED_DIR = null;
 
+    public static void removeRestoredFile(String fileName) {
+        File chunkFile = Paths.get(RESTORED_DIR, fileName).toFile();
+        if(chunkFile.exists()) {
+            chunkFile.delete();
+        }
+    }
+
     public void saveFile(String dir, String fileId, byte[] fileData, int chunkSize) {
 
         ArrayList<byte[]> chunks = (ArrayList<byte[]>) FileManager.splitFile(fileData, chunkSize);

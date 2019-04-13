@@ -7,6 +7,7 @@ import com.dbs.messages.GetchunkMessage;
 import com.dbs.messages.TCPSocketChunkMessage;
 import com.dbs.utils.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
@@ -49,6 +50,7 @@ public class GetchunkHandler {
 
         if(nRetries > MAX_RETRIES) {
             Logger.log("GETCHUNK: Exceeded number of retries - perhaps the file is not available?");
+            FileManager.removeRestoredFile(fileName);
             return;
         }
 
