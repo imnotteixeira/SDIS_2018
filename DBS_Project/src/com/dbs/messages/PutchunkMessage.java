@@ -18,6 +18,8 @@ public class PutchunkMessage extends ChunkDependentMessage {
         super("PUTCHUNK", version, senderId, fileId, chunkNo);
         this.body = body;
         this.replicationDegree = replicationDegree;
+
+        this.headerSize = this.toString().getBytes().length + PeerMessage.CRLF.getBytes().length * 2;
     }
 
     public static PutchunkMessage fromString(byte[] src) throws IllegalStateException {
