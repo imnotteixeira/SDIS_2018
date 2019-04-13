@@ -6,12 +6,11 @@ import java.rmi.RemoteException;
 
 public class PeerRemoteObject implements IPeerInterface {
 
-    private final FileManager fm;
     private final String dir;
     private PeerController peer;
 
-    public PeerRemoteObject(PeerController peer, FileManager fm) {
-        this.fm = fm;
+    public PeerRemoteObject(PeerController peer) {
+
         this.peer = peer;
         this.dir = FileManager.BACKUP_DIR;
     }

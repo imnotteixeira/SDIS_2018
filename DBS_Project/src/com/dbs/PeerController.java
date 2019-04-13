@@ -104,10 +104,9 @@ public class PeerController {
 
         Logger.log("Starting Peer...");
 
-        FileManager fm = new FileManager();
-        Logger.log("Initialized File Manager.");
+        Logger.log("Version: " + Peer.VERSION);
 
-        initializeRemoteObject(fm);
+        initializeRemoteObject();
         Logger.log("Initialized Remote Object.");
 
 
@@ -115,8 +114,8 @@ public class PeerController {
 
     }
 
-    public void initializeRemoteObject(FileManager fm) {
-        this.peer_remote_object = new PeerRemoteObject(this, fm);
+    public void initializeRemoteObject() {
+        this.peer_remote_object = new PeerRemoteObject(this);
         IPeerInterface stub = null;
 
         try {
