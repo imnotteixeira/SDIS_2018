@@ -37,7 +37,7 @@ public class PeerController {
     public HashSet<String> compatibleProtocolVersions = new HashSet<>();
     public int ALLOCATED_SPACE_KB = 10000;
     public final int CHUNK_SIZE = (int) 64e3;
-//    public final int CHUNK_SIZE = 5;
+
     private String rmi_name;
     public static PeerConnectionInfo connectionInfo;
 
@@ -54,8 +54,6 @@ public class PeerController {
 
     private static PeerController instance = null;
 
-       // The static method that controls access to the singleton
-    // instance.
     public static PeerController getInstance() {
 
         if (instance == null) {

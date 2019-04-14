@@ -3,8 +3,6 @@ package com.dbs.messages;
 import com.dbs.Communicator;
 import com.dbs.PeerController;
 
-import java.io.IOException;
-import java.net.MulticastSocket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.regex.Matcher;

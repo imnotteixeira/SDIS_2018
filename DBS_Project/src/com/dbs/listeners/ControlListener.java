@@ -186,11 +186,7 @@ public class ControlListener extends Listener {
                     e.printStackTrace();
                 }
             }
-
-
         }
-
-
     }
 
     private void processDeleteMsg(DatagramPacket packet) {

@@ -4,7 +4,6 @@ import com.dbs.PeerController;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +27,9 @@ public class TCPSocketChunkMessage extends PeerMessage {
     public static TCPSocketChunkMessage fromString(byte[] src) throws IllegalStateException {
 
 
-        Pattern r = Pattern.compile("(CHUNK)\\s+(\\d\\.\\d)\\s+(\\d+)\\s+(\\w+)\\s+(\\d{1,6})\\s+(\\d+\\.\\d+\\.\\d+\\.\\d+)\\s+(\\d+)\\s+" +
+        Pattern r = Pattern.compile("(CHUNK)\\s+(\\d\\.\\d)\\s+(\\d+)\\s+(\\w+)\\s+(\\d{1,6})\\s+"+
+                PeerMessage.CRLF +
+                "(\\d+\\.\\d+\\.\\d+\\.\\d+)\\s+(\\d+)\\s+" +
                 PeerMessage.CRLF +
                 PeerMessage.CRLF
         );
@@ -51,6 +52,7 @@ public class TCPSocketChunkMessage extends PeerMessage {
     public String toString() {
         return super.toString() + " "
                 + chunkNo + " "
+                + PeerMessage.CRLF
                 + hostname + " "
                 + port + " ";
     }

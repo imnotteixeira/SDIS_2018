@@ -28,10 +28,6 @@ public class BackupListener extends Listener {
         try {
             PutchunkMessage msg = PutchunkMessage.fromString(Arrays.copyOf(packet.getData(), packet.getLength()));
 
-            //TaskLogKey key = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.STORE);
-            //ChunkInfo value = new ChunkInfo(new HashSet<>(), Integer.parseInt(msg.getReplicationDegree()));
-            //PeerController.getInstance().getTasks().put(key, value);
-
             if(ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo()).isStored()){
                 this.chunkStorer.sendStoredMsg(msg);
             }else {
@@ -55,8 +51,6 @@ public class BackupListener extends Listener {
     private void processStorage(PutchunkMessage msg) {
 
         ChunkInfo status = ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo());
-
-//        System.out.println("The current replication degree is " + status.getPeers().size() + ". The desired one is " + status.desiredReplication);
 
         if(!status.isReplicationReached()) {
             this.chunkStorer.store(msg);

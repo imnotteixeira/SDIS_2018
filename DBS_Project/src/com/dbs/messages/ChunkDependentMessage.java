@@ -1,7 +1,6 @@
 package com.dbs.messages;
 
 import com.dbs.Communicator;
-import com.dbs.PeerController;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

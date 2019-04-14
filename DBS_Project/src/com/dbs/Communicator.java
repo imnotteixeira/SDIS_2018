@@ -1,8 +1,6 @@
 package com.dbs;
 
-import com.dbs.listeners.Listener;
 import com.dbs.messages.PeerMessage;
-import com.dbs.utils.Logger;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

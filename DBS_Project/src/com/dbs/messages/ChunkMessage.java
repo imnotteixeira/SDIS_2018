@@ -2,9 +2,7 @@ package com.dbs.messages;
 
 import com.dbs.Communicator;
 import com.dbs.PeerController;
-import com.dbs.utils.Logger;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.regex.Matcher;

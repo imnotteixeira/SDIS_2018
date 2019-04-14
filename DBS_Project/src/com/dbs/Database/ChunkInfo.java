@@ -3,7 +3,6 @@ package com.dbs.Database;
 import com.dbs.Peer;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashSet;
 
 public class ChunkInfo implements Serializable {

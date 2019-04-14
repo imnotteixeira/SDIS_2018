@@ -7,7 +7,6 @@ import com.dbs.TaskType;
 import com.dbs.messages.PutchunkMessage;
 import com.dbs.utils.Logger;
 
-import java.nio.file.Path;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +53,7 @@ public class PutchunkHandler {
         TaskLogKey key = new TaskLogKey(fileId, chunkNo, TaskType.PUTCHUNK);
 
         ScheduledFuture future = PeerController.getInstance().getThreadPool().schedule((Runnable) this::sendPutchunk, DELAY_PER_ATTEMPT[nRetries], TimeUnit.SECONDS);
-        Logger.log("Putchunk Sent! Waiting " + DELAY_PER_ATTEMPT[nRetries] + "s to try again");
+        Logger.log("Putchunk Sent! Waiting for response and will try again in " + DELAY_PER_ATTEMPT[nRetries] + "s.");
 
         PeerController.getInstance().getTaskFutures().put(key, future);
     }
