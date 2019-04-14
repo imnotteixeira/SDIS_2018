@@ -295,14 +295,12 @@ public class PeerController {
 
     private void putchunk(String fileId, byte[] chunk, int chunkNo, int replicationDegree) {
 
-        //TaskLogKey key = new TaskLogKey(fileId, chunkNo, TaskType.STORE);
-        //ChunkInfo value = new ChunkInfo(new HashSet<>(), replicationDegree);
-        //PeerController.getInstance().getTasks().put(key, value);
-
         ChunkInfoStorer.getInstance().getChunkInfo(fileId, chunkNo).setDesiredReplicationDegree(replicationDegree);
 
         PutchunkHandler handler = new PutchunkHandler(fileId, chunkNo, replicationDegree, chunk);
+
         handler.send();
+
 
     }
 

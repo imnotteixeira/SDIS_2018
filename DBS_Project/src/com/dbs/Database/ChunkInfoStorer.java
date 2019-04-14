@@ -9,6 +9,7 @@ import java.io.*;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -180,4 +181,13 @@ public class ChunkInfoStorer implements Serializable {
     }
 
 
+    public String getFileNameFromFileId(String fileId) throws Exception{
+
+        for (Map.Entry<String, String> e : backedUpPathnameToFileId.entrySet()) {
+            if(e.getValue().equals(fileId)) {
+                return e.getKey();
+            }
+        }
+        throw new Exception();
+    }
 }

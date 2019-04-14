@@ -7,6 +7,7 @@ import com.dbs.TaskType;
 import com.dbs.messages.PutchunkMessage;
 import com.dbs.utils.Logger;
 
+import java.nio.file.Path;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -33,8 +34,19 @@ public class PutchunkHandler {
     public void send() {
         if(nRetries > MAX_RETRIES) {
             if(!ChunkInfoStorer.getInstance().getChunkInfo(fileId, chunkNo).isReplicationReached()) {
-                Logger.log("Replication Degree was not reached. " +
-                        "Please send information to remove backup from accepted Peers");
+                Logger.log("Replication Degree was not reached for File: " + fileId +".\n Deleting incomplete File from Network...");
+
+
+                try {
+                    String filePath = ChunkInfoStorer.getInstance().getFileNameFromFileId(fileId);
+
+                    DeleteHandler deleteHandler = new DeleteHandler(filePath);
+                    deleteHandler.run();
+                } catch(Exception e) {
+                    Logger.log("Could not delete file. File path not found.");
+                }
+
+
             }
             return;
         }
