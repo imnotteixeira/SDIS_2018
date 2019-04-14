@@ -47,17 +47,16 @@ public class ChunkInfo implements Serializable {
     public ChunkInfo addPeer(String senderId) {
         this.peers.add(Integer.parseInt(senderId));
         if(senderId == Peer.PEER_ID) {
-            ChunkInfoStorer.getInstance().updateStorageSize(1);
+            ChunkInfoStorer.getInstance().updateStorageSize(getBodySize());
         }
         saveChunksInformation();
         return this;
     }
 
     public ChunkInfo removePeer(String senderId) {
-        System.out.println("here");
         this.peers.remove(Integer.parseInt(senderId));
         if(senderId == Peer.PEER_ID) {
-            ChunkInfoStorer.getInstance().updateStorageSize(-1);
+            ChunkInfoStorer.getInstance().updateStorageSize(-getBodySize());
         }
         saveChunksInformation();
         return this;

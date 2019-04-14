@@ -337,7 +337,7 @@ public class PeerController {
     }
 
     public String getState(){
-        return "State Information of Peer " + Peer.PEER_ID + ":\n\nAllocated Storage Space: " + this.ALLOCATED_SPACE_KB + " KB\n\n" + ChunkInfoStorer.getInstance().getInfo();
+        return "State Information of Peer " + Peer.PEER_ID + ":\n\n Total Allocated Storage Space: " + this.ALLOCATED_SPACE_KB + " KB\n + Free Space Available: " + getFreeSpace() + " KB\n\n" + ChunkInfoStorer.getInstance().getInfo();
     }
 
     public ConcurrentHashMap<TaskLogKey, ChunkInfo> getTasks() {
@@ -366,5 +366,9 @@ public class PeerController {
 
     public boolean isCompatible(String s) {
         return this.compatibleProtocolVersions.contains(s);
+    }
+
+    public int getFreeSpace() {
+        return this.ALLOCATED_SPACE_KB - ChunkInfoStorer.getInstance().getUsedBytes() / 1000;
     }
 }

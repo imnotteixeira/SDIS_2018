@@ -79,7 +79,7 @@ public class ControlListener extends Listener {
             TaskLogKey futureKeyRemoved = new TaskLogKey(msg.getFileId(), Integer.parseInt(msg.getChunkNo()), TaskType.REMOVED);
 
             if(chunkStatus.isReplicationReached()) {
-                Logger.log("Chunk " + msg.getChunkNo() + " was successfully stored");
+                Logger.log("Chunk " + msg.getChunkNo() + " was successfully stored in peer " + msg.getSenderId());
                 PeerController.getInstance().getTaskFutures().get(sentPutchunkFutureKey).cancel(true);
                 PeerController.getInstance().getTaskFutures().remove(sentPutchunkFutureKey);
                 PeerController.getInstance().getTaskFutures().get(futureKeyRemoved).cancel(true);

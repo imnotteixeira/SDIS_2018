@@ -18,7 +18,7 @@ public class ChunkStorer {
             sendStoredMsg(msg);
 
             //Storing the fact that this peer has the chunk, because it won't parse the incoming STORED message
-            ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo()).addPeer(Peer.PEER_ID).setBodySize(msg.getBody().length);
+            ChunkInfoStorer.getInstance().getChunkInfo(msg.getFileId(), msg.getChunkNo()).setBodySize(msg.getBody().length).addPeer(Peer.PEER_ID);
 
             Logger.log("Stored chunk! - from putchunk of peer " + msg.getSenderId());
 

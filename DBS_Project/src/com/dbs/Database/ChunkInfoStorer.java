@@ -106,7 +106,6 @@ public class ChunkInfoStorer implements Serializable {
             Logger.log("Could not reallocate to desired size!");
         }
 
-        System.out.println("CHUNKINFOS");
         for(ChunkKey key : this.chunkInfos.keySet()){
             if(this.chunkInfos.get(key).isStored()) {
                 System.out.println(this.chunkInfos.get(key));
@@ -116,8 +115,9 @@ public class ChunkInfoStorer implements Serializable {
         return result;
     }
 
-    public void updateStorageSize(int chunksAdded) {
-        this.storageSizeInBytes += chunksAdded * PeerController.getInstance().CHUNK_SIZE;
+    public void updateStorageSize(int size) {
+
+        this.storageSizeInBytes += size;
     }
 
     public int getUsedBytes() {
@@ -135,7 +135,7 @@ public class ChunkInfoStorer implements Serializable {
                 "\n--------------------------------------";
 
         if(this.backedUpPathnameToFileId.isEmpty()){
-            result += "\n No chunks backed up in this peer!";
+            result += "\n No chunks backed up from this peer!";
         }else {
             for (String filePath : this.backedUpPathnameToFileId.keySet()) {
                 String fileId = this.backedUpPathnameToFileId.get(filePath);
